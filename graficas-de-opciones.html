@@ -98,11 +98,13 @@ svg#chart{width:100%;height:100%;max-height:100%;overflow:visible;font-family:va
 .late{opacity:0;transition:opacity .4s ease}
 .layer.on .late{opacity:1;transition-delay:.75s}
 .axis{stroke:var(--ink);stroke-width:2.5;fill:none}
-.lbl{font-size:16px;fill:var(--ink)}
-.lbl-2{font-size:14px;fill:var(--ink-2)}
-.sign{font-family:var(--display);font-size:30px;font-weight:600;fill:var(--ink)}
-.zero{font-family:var(--display);font-size:22px;font-weight:600;fill:var(--ink)}
-.halo{paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round}
+/* --m agranda las etiquetas de la gráfica en celular (1 en pantallas grandes) */
+#chart{--m:1}
+.lbl{font-size:calc(16px*var(--m));fill:var(--ink)}
+.lbl-2{font-size:calc(14px*var(--m));fill:var(--ink-2)}
+.sign{font-family:var(--display);font-size:calc(30px*var(--m));font-weight:600;fill:var(--ink)}
+.zero{font-family:var(--display);font-size:calc(22px*var(--m));font-weight:600;fill:var(--ink)}
+.halo{paint-order:stroke;stroke:var(--bg);stroke-width:calc(6px*var(--m));stroke-linejoin:round}
 .b{font-weight:600}
 .grab{cursor:grab}
 .grab:active{cursor:grabbing}
@@ -157,8 +159,8 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
       <g id="L-tint" class="layer">
         <rect x="92" y="30" width="866" height="259" fill="var(--gain-tint)"/>
         <rect x="92" y="291" width="866" height="259" fill="var(--loss-tint)"/>
-        <text x="945" y="66" text-anchor="end" class="b" style="font-size:22px;fill:var(--gain)">Ganancia</text>
-        <text x="945" y="530" text-anchor="end" class="b" style="font-size:22px;fill:var(--loss)">Pérdida</text>
+        <text x="945" y="66" text-anchor="end" class="b" style="font-size:calc(22px*var(--m));fill:var(--gain)">Ganancia</text>
+        <text x="945" y="530" text-anchor="end" class="b" style="font-size:calc(22px*var(--m));fill:var(--loss)">Pérdida</text>
       </g>
 
       <!-- Áreas -->
@@ -170,8 +172,8 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
         <rect id="ivBand"/>
         <rect id="tvBand"/>
         <g id="ghosts"></g>
-        <text id="ivTxt" text-anchor="middle" style="font-size:15px;font-weight:600;fill:#fff"></text>
-        <text id="tvTxt" text-anchor="middle" class="halo" style="font-size:15px;font-weight:600"></text>
+        <text id="ivTxt" text-anchor="middle" style="font-size:calc(15px*var(--m));font-weight:600;fill:#fff"></text>
+        <text id="tvTxt" text-anchor="middle" class="halo" style="font-size:calc(15px*var(--m));font-weight:600"></text>
       </g>
 
       <!-- Zonas de moneyness sobre el eje X -->
@@ -194,7 +196,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
           <path d="M90 550 L83 536 L97 536 Z" fill="var(--ink)"/>
           <text x="70" y="52" text-anchor="end" class="sign" style="fill:var(--gain)">+</text>
           <text x="70" y="548" text-anchor="end" class="sign" style="fill:var(--loss)">−</text>
-          <text x="74" y="298" text-anchor="end" class="zero">0</text>
+          <text id="zTxt" x="74" y="298" text-anchor="end" class="zero">0</text>
         </g>
       </g>
 
@@ -207,13 +209,13 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
           <circle cx="120" cy="290" r="9" fill="var(--spot)"/>
           <circle cx="120" cy="290" r="17" fill="var(--spot)" opacity=".18"/>
         </g>
-        <text x="104" y="344" class="lbl-2 halo">menor precio</text>
-        <text x="952" y="344" text-anchor="end" class="lbl-2 halo">mayor precio →</text>
+        <text id="swL" x="104" y="344" class="lbl-2 halo">menor precio</text>
+        <text id="swR" x="952" y="344" text-anchor="end" class="lbl-2 halo">mayor precio →</text>
       </g>
 
       <!-- Etiqueta eje Y -->
       <g id="L-ylab" class="layer">
-        <text transform="translate(30 290) rotate(-90)" text-anchor="middle" class="lbl b">Ganancia / Pérdida</text>
+        <text id="yLbl" transform="translate(30 290) rotate(-90)" text-anchor="middle" class="lbl b">Ganancia / Pérdida</text>
       </g>
 
       <!-- Prima -->
@@ -239,8 +241,8 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
         <g class="late">
           <path id="tailArrow" d="M0 0 L-18 -9 L-18 9 Z"/>
           <text id="tailLbl" text-anchor="middle" class="halo">
-            <tspan id="tailL1" class="b" style="font-size:16px"></tspan>
-            <tspan id="tailL2" dy="20" style="font-size:14px"></tspan>
+            <tspan id="tailL1" class="b" style="font-size:calc(16px*var(--m))"></tspan>
+            <tspan id="tailL2" dy="20" style="font-size:calc(14px*var(--m))"></tspan>
           </text>
         </g>
       </g>
@@ -253,7 +255,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
           <circle id="kHit" cy="290" r="22" fill="transparent"/>
           <circle id="kDot" cy="290" r="8" fill="var(--strike)" stroke="var(--bg)" stroke-width="3"/>
           <rect id="kPill" y="546" height="32" rx="16" fill="var(--strike)"/>
-          <text id="kLbl" y="567" text-anchor="middle" style="font-size:15px;font-weight:600;fill:#fff"></text>
+          <text id="kLbl" y="567" text-anchor="middle" style="font-size:calc(15px*var(--m));font-weight:600;fill:#fff"></text>
         </g>
       </g>
 
@@ -262,7 +264,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
         <line id="sLine" y1="42" y2="545" stroke="var(--spot)" stroke-width="2" stroke-dasharray="6 7"/>
         <g id="sHandle" class="grab">
           <rect id="sPill" y="6" height="32" rx="16" fill="var(--spot)"/>
-          <text id="sLbl" y="27" text-anchor="middle" style="font-size:15px;font-weight:600;fill:#fff"></text>
+          <text id="sLbl" y="27" text-anchor="middle" style="font-size:calc(15px*var(--m));font-weight:600;fill:#fff"></text>
         </g>
       </g>
 
@@ -517,10 +519,12 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     const yI=py(sg*iv), yP=py(sg*st.prem);
     set('ivBand',{x:x0,width:w,y:Math.min(Y0,yI),height:Math.abs(yI-Y0),fill:flatCol,'fill-opacity':.8});
     set('tvBand',{x:x0,width:w,y:Math.min(yI,yP),height:Math.abs(yP-yI),fill:flatCol,'fill-opacity':.2});
-    $('ivTxt').textContent=money(iv)+' valor intrínseco'; set('ivTxt',{x:cx,y:(Y0+yI)/2+5});
-    $('ivTxt').style.opacity=iv*8.5>=22?1:0;
-    $('tvTxt').textContent=money(tv)+' valor en el tiempo'; set('tvTxt',{x:cx,y:(yI+yP)/2+5}); $('tvTxt').style.fill=flatCol;
-    $('tvTxt').style.opacity=tv*8.5>=22?1:0;
+    // Solo se muestra el texto si cabe en su franja (alto y ancho)
+    const fits=el=>el.getComputedTextLength()<=w-12*M;
+    $('ivTxt').textContent=money(iv)+' valor intrínseco'; set('ivTxt',{x:cx,y:(Y0+yI)/2+5*M});
+    $('ivTxt').style.opacity=iv*8.5>=22*M&&fits($('ivTxt'))?1:0;
+    $('tvTxt').textContent=money(tv)+' valor en el tiempo'; set('tvTxt',{x:cx,y:(yI+yP)/2+5*M}); $('tvTxt').style.fill=flatCol;
+    $('tvTxt').style.opacity=tv*8.5>=22*M&&fits($('tvTxt'))?1:0;
 
     // Escalones: las tres primas posibles (ITM / ATM / OTM) con el mismo S, cada una hasta su strike
     const d=c.call?-10:10, cur=mness();
@@ -530,14 +534,35 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
       const rx=Math.min(xEdge,xk), rw=Math.abs(xk-xEdge);
       g+=`<rect x="${rx}" y="${Math.min(Y0,yp)}" width="${rw}" height="${Math.abs(yp-Y0)}" fill="none"
             stroke="${flatCol}" stroke-width="${on?3:1.8}" stroke-dasharray="${on?'none':'7 6'}" opacity="${on?1:.75}"/>`;
-      const tx=c.call?xk+10:xk-10, ty=sg<0?yp+20:yp-10;
+      const tx=c.call?xk+10*M:xk-10*M, ty=sg<0?yp+20*M:yp-10*M;
       g+=`<text x="${tx}" y="${ty}" text-anchor="${c.call?'start':'end'}" class="halo"
-            style="font-size:${on?17:15}px;font-weight:${on?700:600};fill:${on?flatCol:'var(--ink-2)'}">${m.toUpperCase()} · ${money(p)}</text>`;
+            style="font-size:calc(${on?17:15}px*var(--m));font-weight:${on?700:600};fill:${on?flatCol:'var(--ink-2)'}">${m.toUpperCase()} · ${money(p)}</text>`;
     });
     $('ghosts').innerHTML=g;
   }
 
+  // Factor de tamaño de las etiquetas: en pantallas angostas la gráfica se reduce mucho,
+  // así que el texto crece para leerse a ~10 px (máximo 1.8×). En pantallas grandes vale 1.
+  let M=1;
+  const svg=$('chart'), mqM=matchMedia('(max-width:600px)');
+  function fit(){
+    const w=svg.getBoundingClientRect().width;
+    const m=mqM.matches&&w?Math.min(1.8,Math.max(1,Math.round(10/(16*w/1000)*20)/20)):1;
+    if(m===M&&svg.dataset.m)return;
+    M=m; svg.dataset.m=m; svg.style.setProperty('--m',m);
+    // Margen extra a la izquierda para la etiqueta vertical y arriba/abajo para las etiquetas de S y K
+    const left=-(M-1)*28, top=Math.min(0,22-16*M-2), bot=Math.max(580,562+16*M+2);
+    svg.setAttribute('viewBox',`${left} ${top} ${1000-left} ${bot-top}`);
+    set('yLbl',{transform:`translate(${30+left} 290) rotate(-90)`});
+    set('sPill',{y:22-16*M,height:32*M,rx:16*M}); set('sLbl',{y:22+5*M});
+    set('kPill',{y:562-16*M,height:32*M,rx:16*M}); set('kLbl',{y:562+5*M}); set('kHit',{r:22*M});
+    set('tL',{y:Y0-28*M}); set('tR',{y:Y0-28*M}); set('tATM',{y:Y0-54*M});
+    set('zTxt',{y:Y0+8*M}); set('swL',{y:Y0+54*M}); set('swR',{y:Y0+54*M}); set('tailL2',{dy:20*M});
+  }
+  window.addEventListener('resize',()=>render());
+
   function render(){
+    fit();
     st.prem=premOf(st.S,st.K,cfg().call);
     const c=cfg(), {S,K,prem,T}=st, B=be();
     const flatV=c.buy?-prem:prem;
@@ -550,7 +575,9 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
 
     // Etiqueta del eje X en el lado libre
     const xAbove=(c.call&&!c.buy)||(!c.call&&c.buy);
-    $('xLbl').setAttribute('y',xAbove?272:320);
+    // En celular, en los pasos 6 y 8 va del lado contrario a las etiquetas de moneyness y de las primas
+    const xUp=M>1&&st.step===6?false:M>1&&st.step===SPLIT?c.buy:xAbove;
+    $('xLbl').setAttribute('y',xUp?Y0-18*M:Y0+30*M);
 
     // Moneyness: a la izquierda de K y a la derecha de K
     const left=c.call?'otm':'itm', right=c.call?'itm':'otm', m=mness();
@@ -563,21 +590,23 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
 
     // S
     set('sLine',{x1:xS,x2:xS});
-    const sTxt='Precio actual S = '+money(S); $('sLbl').textContent=sTxt; set('sLbl',{x:xS});
-    const ws=sTxt.length*8.3+26; set('sPill',{x:xS-ws/2,width:ws});
+    // En celular la etiqueta se acorta y no se sale de la gráfica
+    const pill=(txt,x)=>{const w=(txt.length*8.3+26)*M; let x0=x-w/2; if(M>1)x0=clamp(x0,[96,1000-w]); return [x0,w];};
+    const sTxt=(M>1?'S = ':'Precio actual S = ')+money(S), [sx,ws]=pill(sTxt,xS);
+    $('sLbl').textContent=sTxt; set('sLbl',{x:sx+ws/2}); set('sPill',{x:sx,width:ws});
 
     // K
     set('kTick',{x1:xK,x2:xK}); set('kGuide',{x1:xK,x2:xK});
     set('kHit',{cx:xK}); set('kDot',{cx:xK});
-    const kTxt='Strike K = '+money(K); $('kLbl').textContent=kTxt; set('kLbl',{x:xK});
-    const wk=kTxt.length*8.3+26; set('kPill',{x:xK-wk/2,width:wk});
+    const kTxt=(M>1?'K = ':'Strike K = ')+money(K), [kx,wk]=pill(kTxt,xK);
+    $('kLbl').textContent=kTxt; set('kLbl',{x:kx+wk/2}); set('kPill',{x:kx,width:wk});
 
     // Prima
     set('premBar',{y2:yF,stroke:flatCol});
-    $('premTick').textContent=(c.buy?'−':'+')+prem; set('premTick',{y:yF+6}); $('premTick').style.fill=flatCol;
+    $('premTick').textContent=(c.buy?'−':'+')+prem; set('premTick',{y:yF+6*M}); $('premTick').style.fill=flatCol;
     set('flat',{d:`M${xEdge} ${yF} H${xK}`,stroke:flatCol});
     $('premLbl').innerHTML=`${c.buy?'Prima pagada':'Prima recibida'} <tspan style="font-weight:600;fill:${flatCol}">${c.buy?'−':'+'}${money(prem)}</tspan>`;
-    set('premLbl',{x:c.call?104:xK+16,y:flatV<0?yF-13:yF+26});
+    set('premLbl',{x:c.call?104:xK+16*M,y:flatV<0?yF-13*M:yF+10+16*M});
     // En el paso de moneyness el área es solo el rectángulo de la prima (sin el tramo hacia el equilibrio)
     set('flatArea',{d:st.step===SPLIT?`M${xEdge} ${Y0} V${yF} H${xK} V${Y0} Z`:`M${xEdge} ${Y0} V${yF} H${xK} L${xB} ${Y0} Z`,fill:flatTint});
     $('premSw').style.background=flatCol;
@@ -586,7 +615,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     set('rise',{d:`M${xK} ${yF} L${xB} ${Y0}`,stroke:flatCol});
     set('beDot',{cx:xB});
     $('beLbl').innerHTML=`Equilibrio <tspan style="font-weight:600;fill:var(--be)">${money(B)}</tspan>`;
-    set('beLbl',{x:c.call?xB-14:xB+14,y:flatV<0?262:318,'text-anchor':c.call?'end':'start'});
+    set('beLbl',{x:c.call?xB-14*M:xB+14*M,y:flatV<0?Y0-28*M:Y0+28*M,'text-anchor':c.call?'end':'start'});
 
     // Cola: ganancia o pérdida potencial
     set('tail',{d:`M${xB} ${Y0} L${xE} ${yE}`,stroke:tailCol});
@@ -594,11 +623,14 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     const a=Math.atan2(yE-Y0,xE-xB);
     set('tailArrow',{transform:`translate(${xE+6*Math.cos(a)} ${yE+6*Math.sin(a)}) rotate(${a*180/Math.PI})`,fill:tailCol});
     // Etiqueta junto al eje, dentro del área de la cola
-    const tailUp=pay(pEnd)>0, tx=c.call?xE-10:xE+10, anc=c.call?'end':'start';
-    set('tailLbl',{x:tx,y:tailUp?252:318,'text-anchor':anc}); set('tailL1',{x:tx}); set('tailL2',{x:tx});
+    const tailUp=pay(pEnd)>0, tx=c.call?xE-10*M:xE+10*M, anc=c.call?'end':'start';
+    set('tailLbl',{x:tx,y:tailUp?Y0-38*M:Y0+28*M,'text-anchor':anc}); set('tailL1',{x:tx}); set('tailL2',{x:tx});
     $('tailLbl').style.fill=tailCol;
     $('tailL1').textContent=c.buy?'Ganancia potencial':'Pérdida potencial';
     $('tailL2').textContent=c.call?'ilimitada':'máxima '+money(K-prem);
+    // En celular, si la etiqueta de la cola choca con la del equilibrio, se aleja del eje
+    if(M>1&&hit('tailLbl','beLbl')){const t=$('tailLbl').getBBox(), e=$('beLbl').getBBox();
+      set('tailLbl',{y:+$('tailLbl').getAttribute('y')+(tailUp?e.y-(t.y+t.height)-6:e.y+e.height-t.y+6)});}
 
     renderSplit(c,flatCol,xEdge,xK);
     $('premLbl').style.opacity=st.step===SPLIT?0:1;
@@ -606,13 +638,25 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     // Sonda
     const v=pay(T), vc=Math.max(-VMAX,Math.min(VMAX,v)), xT=px(T), yT=py(vc);
     set('pLine',{x1:xT,x2:xT,y2:yT}); set('pDot',{cx:xT,cy:yT});
-    set('pLbl',{x:Math.max(190,Math.min(880,xT)),y:v>=0?yT-22:yT+34});
-    $('pLbl').innerHTML=`S<tspan baseline-shift="sub" style="font-size:11px">T</tspan> = ${money(T)}  →  <tspan style="fill:${v>0?'var(--gain)':v<0?'var(--loss)':'var(--be)'}">${signed(v)}</tspan>`;
+    set('pLbl',{x:Math.max(90+100*M,Math.min(980-100*M,xT)),y:v>=0?yT-22*M:yT+34*M});
+    $('pLbl').innerHTML=`S<tspan baseline-shift="sub" style="font-size:calc(11px*var(--m))">T</tspan> = ${money(T)}  →  <tspan style="fill:${v>0?'var(--gain)':v<0?'var(--loss)':'var(--be)'}">${signed(v)}</tspan>`;
+
+    ['beLbl','tailLbl','xLbl'].forEach(id=>$(id).style.opacity='');
+    if(M>1&&st.step===N-1){
+      const near=['beLbl','tailLbl','xLbl','premLbl'], n=()=>near.filter(id=>hit('pLbl',id)).length, n0=n();
+      if(n0){set('pLbl',{y:v>=0?yT+34*M:yT-22*M}); if(n()>=n0)set('pLbl',{y:v>=0?yT-22*M:yT+34*M});}
+      // Lo que siga tapado por la lectura de la sonda se atenúa mientras esté encima
+      near.forEach(id=>{if(hit('pLbl',id))$(id).style.opacity=.12;});
+    }
 
     // Pie y extra
     $('vS').textContent=money(S); $('vK').textContent=money(K); $('vP').textContent=money(prem);
     const ex=$('extra'), html=extra(); if(ex.dataset.h!==html){ex.innerHTML=html;ex.dataset.h=html;}
   }
+
+  // Choque entre dos etiquetas (en coordenadas de la gráfica)
+  function hit(a,b){const p=$(a).getBBox(), q=$(b).getBBox();
+    return p.width&&q.width&&p.x<q.x+q.width&&q.x<p.x+p.width&&p.y<q.y+q.height&&q.y<p.y+p.height;}
 
   // Botones de parámetros
   $('params').addEventListener('click',e=>{
@@ -621,7 +665,6 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
   });
 
   // Arrastre en la gráfica
-  const svg=$('chart');
   function svgX(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse()).x;}
   function drag(el,key){
     el.addEventListener('pointerdown',e=>{
