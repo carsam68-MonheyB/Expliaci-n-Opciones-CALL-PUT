@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gráficas de Opciones</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<style>
+/* Layout: una diapositiva estilo Keynote — selector de posición, título, gráfica al centro, controles y navegación abajo. Fondo blanco por diseño. */
+:root{
+  --bg:#ffffff;
+  --ink:#1d1d1f;
+  --ink-2:#6e6e73;
+  --ink-3:#a1a1a6;
+  --rule:#d2d2d7;
+  --soft:#f5f5f7;
+  --spot:#0071e3;
+  --strike:#5e5ce6;
+  --loss:#e0352b;
+  --loss-tint:rgba(255,59,48,.09);
+  --gain:#1e9e4a;
+  --gain-tint:rgba(52,199,89,.12);
+  --be:#ef8a00;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Helvetica Neue",Arial,sans-serif;
+  --text:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--text);-webkit-font-smoothing:antialiased;margin:0}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+
+.app{height:100%;min-height:600px;max-width:1240px;margin:0 auto;display:grid;grid-template-rows:auto auto minmax(240px,1fr) auto;gap:6px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 18px}
+
+/* Selector de posición */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--soft);border-radius:11px;padding:3px;gap:2px}
+.seg button{font:inherit;font-size:14px;font-weight:500;color:var(--ink-2);background:transparent;border:0;border-radius:8px;padding:6px 14px;cursor:pointer;transition:background .2s ease,color .2s ease}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#count{font-size:13px;color:var(--ink-3);font-weight:500;font-variant-numeric:tabular-nums}
+
+/* Encabezado */
+.head{min-height:172px;display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink-2)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.2vw,48px);line-height:1.06;letter-spacing:-.025em;margin:0;text-wrap:balance}
+#sub{font-size:clamp(15px,1.55vw,19px);line-height:1.45;color:var(--ink-2);margin:0;max-width:64ch}
+#sub b{color:var(--ink);font-weight:600}
+#extra{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-height:34px}
+.fx{animation:fadeUp .55s cubic-bezier(.2,.7,.2,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.app.cover{grid-template-rows:1fr auto}
+.app.cover .head{justify-content:center;align-items:center;text-align:center;min-height:0}
+.app.cover h1{font-size:clamp(44px,8vw,96px)}
+.app.cover #sub{font-size:clamp(17px,2vw,24px)}
+.app.cover .stage{display:none}
+.app.cover .top{display:none}
+.app.cover #extra{flex-direction:column;align-items:center;gap:16px;margin-top:18px}
+.start{margin:0;font-size:15px;color:var(--ink-3)}
+.picks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;width:min(100%,900px)}
+.pick{font:inherit;text-align:left;background:var(--soft);color:var(--ink);border:2px solid transparent;border-radius:18px;padding:14px 16px 16px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+.pick:hover{border-color:var(--rule);transform:translateY(-2px)}
+.pick[aria-pressed="true"]{background:var(--bg);border-color:var(--ink)}
+.pick svg{width:100%;height:auto;margin-bottom:8px}
+.pick b{font-family:var(--display);font-size:18px;font-weight:600}
+.pick span{font-size:13px;color:var(--ink-2)}
+@media (max-width:760px){.picks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.start kbd{font-family:var(--text);border:1px solid var(--rule);border-radius:6px;padding:1px 7px;color:var(--ink-2)}
+
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:15px;font-weight:600;background:var(--soft);font-variant-numeric:tabular-nums}
+.pill .dot{width:9px;height:9px;border-radius:50%}
+.pill.itm{color:var(--gain)} .pill.itm .dot{background:var(--gain)}
+.pill.atm{color:var(--be)} .pill.atm .dot{background:var(--be)}
+.pill.otm{color:var(--loss)} .pill.otm .dot{background:var(--loss)}
+.chip{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.chip:hover{border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.hint{margin:0;font-size:14px;color:var(--ink-3)}
+.kv{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:16px;font-variant-numeric:tabular-nums}
+.kv span{color:var(--ink-2)}
+.kv strong{font-weight:600}
+.formulas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%}
+.formulas div{background:var(--soft);border-radius:14px;padding:10px 14px;min-width:0}
+.formulas small{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--ink-2);text-transform:uppercase}
+.formulas b{display:block;font-size:16px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+@media (max-width:760px){.formulas{grid-template-columns:repeat(2,minmax(0,1fr))}.head{min-height:0}}
+
+/* Gráfica */
+.stage{min-height:0;display:flex;align-items:center;justify-content:center}
+svg#chart{width:100%;height:100%;max-height:100%;overflow:visible;font-family:var(--text);touch-action:none;user-select:none;-webkit-user-select:none}
+.layer{opacity:0;transition:opacity .6s ease;pointer-events:none}
+.layer.on{opacity:1;pointer-events:auto}
+.draw{stroke-dasharray:1 1;stroke-dashoffset:1;transition:stroke-dashoffset 1s cubic-bezier(.6,0,.2,1)}
+.layer.on .draw{stroke-dashoffset:0}
+.late{opacity:0;transition:opacity .4s ease}
+.layer.on .late{opacity:1;transition-delay:.75s}
+.axis{stroke:var(--ink);stroke-width:2.5;fill:none}
+.lbl{font-size:16px;fill:var(--ink)}
+.lbl-2{font-size:14px;fill:var(--ink-2)}
+.sign{font-family:var(--display);font-size:30px;font-weight:600;fill:var(--ink)}
+.zero{font-family:var(--display);font-size:22px;font-weight:600;fill:var(--ink)}
+.halo{paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round}
+.b{font-weight:600}
+.grab{cursor:grab}
+.grab:active{cursor:grabbing}
+#sweep{animation:sweep 3.2s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes sweep{from{transform:translateX(0)}to{transform:translateX(780px)}}
+
+/* Pie: parámetros y navegación */
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 20px;padding-top:6px}
+.params{display:flex;flex-wrap:wrap;gap:8px 18px;min-height:36px;align-items:center}
+.field{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2)}
+.field .v{min-width:44px;text-align:center;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.field .sw{width:10px;height:10px;border-radius:50%}
+.step-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--rule);background:var(--bg);color:var(--ink);font:inherit;font-size:16px;line-height:1;cursor:pointer}
+.step-btn:hover{border-color:var(--ink-3)}
+.nav{display:flex;align-items:center;gap:14px}
+.navbtn{width:40px;height:40px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-size:20px;cursor:pointer;display:grid;place-items:center}
+.navbtn:hover{background:#e8e8ed}
+.navbtn:disabled{opacity:.35;cursor:default}
+.homebtn{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:999px;border:0;background:var(--soft);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.homebtn:hover{background:#e8e8ed}
+.dots{display:flex;gap:7px}
+.dots button{width:8px;height:8px;padding:0;border-radius:50%;border:0;background:var(--rule);cursor:pointer;transition:width .3s ease,background .3s ease}
+.dots button[aria-current="step"]{width:22px;border-radius:4px;background:var(--ink)}
+button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
+.note{font-size:12px;color:var(--ink-3)}
+
+@media (prefers-reduced-motion:reduce){
+  .layer,.draw,.late{transition:none!important}
+  #sweep,.fx{animation:none!important}
+}
+</style>
+
+<div class="app cover" id="app">
+  <div class="top">
+    <div class="seg" id="seg" role="group" aria-label="Posición"></div>
+    <span id="count"></span>
+  </div>
+
+  <header class="head" id="head">
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1 id="title"></h1>
+    <p id="sub"></p>
+    <div id="extra"></div>
+  </header>
+
+  <div class="stage">
+    <svg id="chart" viewBox="0 0 1000 580" role="img" aria-label="Gráfica de resultado al vencimiento de la posición en opciones">
+      <!-- Tintes de ganancia / pérdida (eje Y) -->
+      <g id="L-tint" class="layer">
+        <rect x="92" y="30" width="866" height="259" fill="var(--gain-tint)"/>
+        <rect x="92" y="291" width="866" height="259" fill="var(--loss-tint)"/>
+        <text x="945" y="66" text-anchor="end" class="b" style="font-size:22px;fill:var(--gain)">Ganancia</text>
+        <text x="945" y="530" text-anchor="end" class="b" style="font-size:22px;fill:var(--loss)">Pérdida</text>
+      </g>
+
+      <!-- Áreas -->
+      <g id="L-flatArea" class="layer"><path id="flatArea"/></g>
+      <g id="L-tailArea" class="layer"><path id="tailArea"/></g>
+
+      <!-- Prima dividida: valor intrínseco + valor en el tiempo -->
+      <g id="L-split" class="layer">
+        <rect id="ivBand"/>
+        <rect id="tvBand"/>
+        <g id="ghosts"></g>
+        <text id="ivTxt" text-anchor="middle" style="font-size:15px;font-weight:600;fill:#fff"></text>
+        <text id="tvTxt" text-anchor="middle" class="halo" style="font-size:15px;font-weight:600"></text>
+      </g>
+
+      <!-- Zonas de moneyness sobre el eje X -->
+      <g id="L-money" class="layer">
+        <line id="mL" x1="92" y1="290" y2="290" stroke-width="10"/>
+        <line id="mR" x2="946" y1="290" y2="290" stroke-width="10"/>
+        <text id="tL" y="262" text-anchor="middle" class="lbl b halo"></text>
+        <text id="tR" y="262" text-anchor="middle" class="lbl b halo"></text>
+        <text id="tATM" y="236" text-anchor="middle" class="lbl b halo" style="fill:var(--be)">At the money</text>
+      </g>
+
+      <!-- Ejes -->
+      <g id="L-axes" class="layer">
+        <path class="draw axis" pathLength="1" d="M90 290 H952"/>
+        <path class="draw axis" pathLength="1" d="M90 290 V38"/>
+        <path class="draw axis" pathLength="1" d="M90 290 V542"/>
+        <g class="late">
+          <path d="M958 290 L944 283 L944 297 Z" fill="var(--ink)"/>
+          <path d="M90 30 L83 44 L97 44 Z" fill="var(--ink)"/>
+          <path d="M90 550 L83 536 L97 536 Z" fill="var(--ink)"/>
+          <text x="70" y="52" text-anchor="end" class="sign" style="fill:var(--gain)">+</text>
+          <text x="70" y="548" text-anchor="end" class="sign" style="fill:var(--loss)">−</text>
+          <text x="74" y="298" text-anchor="end" class="zero">0</text>
+        </g>
+      </g>
+
+      <!-- Etiqueta eje X -->
+      <g id="L-xlab" class="layer">
+        <text id="xLbl" x="952" y="320" text-anchor="end" class="lbl b halo">Precio del subyacente</text>
+      </g>
+      <g id="L-sweep" class="layer">
+        <g id="sweep">
+          <circle cx="120" cy="290" r="9" fill="var(--spot)"/>
+          <circle cx="120" cy="290" r="17" fill="var(--spot)" opacity=".18"/>
+        </g>
+        <text x="104" y="344" class="lbl-2 halo">menor precio</text>
+        <text x="952" y="344" text-anchor="end" class="lbl-2 halo">mayor precio →</text>
+      </g>
+
+      <!-- Etiqueta eje Y -->
+      <g id="L-ylab" class="layer">
+        <text transform="translate(30 290) rotate(-90)" text-anchor="middle" class="lbl b">Ganancia / Pérdida</text>
+      </g>
+
+      <!-- Prima -->
+      <g id="L-prem" class="layer">
+        <line id="premBar" x1="90" x2="90" y1="290" stroke-width="6" stroke-linecap="round"/>
+        <text id="premTick" x="74" text-anchor="end" class="lbl b"></text>
+        <path id="flat" class="draw" pathLength="1" fill="none" stroke-width="5" stroke-linecap="round"/>
+        <text id="premLbl" class="lbl halo"></text>
+      </g>
+
+      <!-- Punto de equilibrio -->
+      <g id="L-be" class="layer">
+        <path id="rise" class="draw" pathLength="1" fill="none" stroke-width="5" stroke-linecap="round"/>
+        <g class="late">
+          <circle id="beDot" cy="290" r="9" fill="var(--be)" stroke="var(--bg)" stroke-width="3"/>
+          <text id="beLbl" class="lbl halo"></text>
+        </g>
+      </g>
+
+      <!-- Ganancia / pérdida potencial -->
+      <g id="L-tail" class="layer">
+        <path id="tail" class="draw" pathLength="1" fill="none" stroke-width="5" stroke-linecap="round"/>
+        <g class="late">
+          <path id="tailArrow" d="M0 0 L-18 -9 L-18 9 Z"/>
+          <text id="tailLbl" text-anchor="middle" class="halo">
+            <tspan id="tailL1" class="b" style="font-size:16px"></tspan>
+            <tspan id="tailL2" dy="20" style="font-size:14px"></tspan>
+          </text>
+        </g>
+      </g>
+
+      <!-- Strike -->
+      <g id="L-strike" class="layer">
+        <line id="kGuide" y1="300" y2="546" stroke="var(--strike)" stroke-width="1.5" stroke-dasharray="2 6" opacity=".55"/>
+        <line id="kTick" y1="276" y2="304" stroke="var(--strike)" stroke-width="4" stroke-linecap="round"/>
+        <g id="kHandle" class="grab">
+          <circle id="kHit" cy="290" r="22" fill="transparent"/>
+          <circle id="kDot" cy="290" r="8" fill="var(--strike)" stroke="var(--bg)" stroke-width="3"/>
+          <rect id="kPill" y="546" height="32" rx="16" fill="var(--strike)"/>
+          <text id="kLbl" y="567" text-anchor="middle" style="font-size:15px;font-weight:600;fill:#fff"></text>
+        </g>
+      </g>
+
+      <!-- Precio actual del subyacente -->
+      <g id="L-spot" class="layer">
+        <line id="sLine" y1="42" y2="545" stroke="var(--spot)" stroke-width="2" stroke-dasharray="6 7"/>
+        <g id="sHandle" class="grab">
+          <rect id="sPill" y="6" height="32" rx="16" fill="var(--spot)"/>
+          <text id="sLbl" y="27" text-anchor="middle" style="font-size:15px;font-weight:600;fill:#fff"></text>
+        </g>
+      </g>
+
+      <!-- Sonda (resumen) -->
+      <g id="L-probe" class="layer">
+        <rect id="probeHit" x="90" y="30" width="870" height="520" fill="transparent" class="grab"/>
+        <line id="pLine" y1="290" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 5" pointer-events="none"/>
+        <circle id="pDot" r="9" fill="var(--ink)" stroke="var(--bg)" stroke-width="3" pointer-events="none"/>
+        <text id="pLbl" text-anchor="middle" class="lbl b halo" pointer-events="none"></text>
+      </g>
+    </svg>
+  </div>
+
+  <footer class="foot">
+    <div class="params" id="params">
+      <div class="field" data-from="4" hidden><span class="sw" style="background:var(--spot)"></span>Precio actual S
+        <button class="step-btn" data-k="S" data-d="-1" aria-label="Bajar precio actual">−</button><span class="v" id="vS"></span><button class="step-btn" data-k="S" data-d="1" aria-label="Subir precio actual">+</button></div>
+      <div class="field" data-from="5" hidden><span class="sw" style="background:var(--strike)"></span>Strike K
+        <button class="step-btn" data-k="K" data-d="-1" aria-label="Bajar strike">−</button><span class="v" id="vK"></span><button class="step-btn" data-k="K" data-d="1" aria-label="Subir strike">+</button></div>
+      <div class="field" data-from="7" hidden><span class="sw" id="premSw"></span>Prima <span class="v" id="vP"></span><span class="note">calculada</span></div>
+      <span class="note" data-from="4" hidden>Cifras ilustrativas, por acción</span>
+    </div>
+    <nav class="nav" aria-label="Pasos">
+      <button class="homebtn" id="home" aria-label="Volver a la portada">
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M3 9.5 10 3.5l7 6V17h-4.5v-4.5h-5V17H3z" fill="currentColor"/></svg>Portada</button>
+      <button class="navbtn" id="prev" aria-label="Paso anterior">‹</button>
+      <div class="dots" id="dots"></div>
+      <button class="navbtn" id="next" aria-label="Paso siguiente">›</button>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(function(){
+  // Escalas: precio 55–145 en X, resultado −30…+30 en Y (cero al centro)
+  const P0=55, P1=145, Y0=290, VMAX=30, XL=96, XR=940;
+  const px=p=>130+(p-P0)*(800/(P1-P0));
+  const py=v=>Y0-v*8.5;
+  const pFromX=x=>P0+(x-130)*(P1-P0)/800;
+  const PL=pFromX(XL);
+  const $=id=>document.getElementById(id);
+  const money=v=>'$'+Math.round(v);
+  const signed=v=>(v>0?'+$':v<0?'−$':'$')+Math.abs(Math.round(v));
+  const clamp=(v,[a,b])=>Math.max(a,Math.min(b,v));
+  const MN={itm:'In the money',atm:'At the money',otm:'Out of the money'};
+
+  // Las cuatro posiciones
+  const STRATS={
+    'compra-call':{name:'Compra de Call',en:'Long Call',call:true,buy:true,
+      s5:'K es el precio al que el call da <b>derecho a comprar</b> el subyacente. Lo ubicamos en otro punto del mismo eje X.',
+      s7:'Quien compra el call paga la prima por adelantado, así que la gráfica <b>empieza debajo del cero</b>. Si al vencimiento el precio no supera K, el call no se ejerce y se pierde la prima, nunca más que eso.',
+      s8:'Arriba de K el call empieza a recuperar la prima. El resultado llega a cero cuando el precio al vencimiento es <b>K + prima</b>.',
+      s9:'Después del punto de equilibrio, cada peso que sube el subyacente es un peso de ganancia. La ganancia <b>no tiene techo</b>; la pérdida está limitada a la prima.'},
+    'venta-call':{name:'Venta de Call',en:'Short Call',call:true,buy:false,
+      s5:'K es el precio al que el vendedor del call tiene la <b>obligación de vender</b> el subyacente si el comprador ejerce.',
+      s7:'Quien vende el call cobra la prima por adelantado, así que la gráfica <b>empieza arriba del cero</b>. Si al vencimiento el precio no supera K, el call no se ejerce y la prima es la ganancia, nunca más que eso.',
+      s8:'Arriba de K el vendedor empieza a devolver la prima. El resultado llega a cero cuando el precio al vencimiento es <b>K + prima</b>.',
+      s9:'Después del punto de equilibrio, cada peso que sube el subyacente es un peso de pérdida. La pérdida <b>no tiene límite</b>; la ganancia está limitada a la prima.'},
+    'compra-put':{name:'Compra de Put',en:'Long Put',call:false,buy:true,
+      s5:'K es el precio al que el put da <b>derecho a vender</b> el subyacente. Lo ubicamos en otro punto del mismo eje X.',
+      s7:'Quien compra el put paga la prima por adelantado, así que la gráfica <b>empieza debajo del cero</b>. Si al vencimiento el precio queda arriba de K, el put no se ejerce y se pierde la prima, nunca más que eso.',
+      s8:'Debajo de K el put empieza a recuperar la prima. El resultado llega a cero cuando el precio al vencimiento es <b>K − prima</b>.',
+      s9:'Por debajo del punto de equilibrio, cada peso que baja el subyacente es un peso de ganancia. La ganancia máxima es <b>K − prima</b>, si el precio llegara a cero; la pérdida está limitada a la prima.'},
+    'venta-put':{name:'Venta de Put',en:'Short Put',call:false,buy:false,
+      s5:'K es el precio al que el vendedor del put tiene la <b>obligación de comprar</b> el subyacente si el comprador ejerce.',
+      s7:'Quien vende el put cobra la prima por adelantado, así que la gráfica <b>empieza arriba del cero</b>. Si al vencimiento el precio queda arriba de K, el put no se ejerce y la prima es la ganancia, nunca más que eso.',
+      s8:'Debajo de K el vendedor empieza a devolver la prima. El resultado llega a cero cuando el precio al vencimiento es <b>K − prima</b>.',
+      s9:'Por debajo del punto de equilibrio, cada peso que baja el subyacente es un peso de pérdida. La pérdida máxima es <b>K − prima</b>, si el precio llegara a cero; la ganancia está limitada a la prima.'}
+  };
+  const KEYS=Object.keys(STRATS);
+  const KLIM={call:[75,105],put:[80,115]};
+  const LIM={S:[57,143],T:[57,143]};
+  const GAP=12; // S se mantiene a no más de $12 del strike
+  const st={key:'compra-call',step:0,S:90,K:100,prem:6,T:120};
+  const cfg=()=>STRATS[st.key];
+  const kLim=()=>cfg().call?KLIM.call:KLIM.put;
+
+  // Prima ilustrativa: Black-Scholes con volatilidad 40%, 6 meses y tasa 0%, redondeada a pesos
+  const VOL=0.40, TT=0.5;
+  function ncdf(x){const t=1/(1+0.2316419*Math.abs(x)),d=0.3989423*Math.exp(-x*x/2);
+    const p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function bs(S,K,call){const s=VOL*Math.sqrt(TT),d1=(Math.log(S/K)+s*s/2)/s,d2=d1-s;
+    const c=S*ncdf(d1)-K*ncdf(d2);return call?c:c-S+K;}
+  // Redondeada a pesos; sin redondear mientras se anima el strike, para que el área crezca suave
+  const premOf=(S,K,call)=>{const r=bs(S,K,call);return Math.max(1,Number.isInteger(K)&&Number.isInteger(S)?Math.round(r):r);};
+  function setVal(key,v){
+    if(key==='S') st.S=clamp(v,[Math.max(LIM.S[0],st.K-GAP),Math.min(LIM.S[1],st.K+GAP)]);
+    else if(key==='K'){const [a,b]=kLim(); st.K=clamp(v,[Math.max(a,st.S-GAP),Math.min(b,st.S+GAP)]);}
+    else st[key]=clamp(v,LIM[key]);
+    render();
+  }
+  const be=()=>cfg().call?st.K+st.prem:st.K-st.prem;
+  const intrinsic=s=>cfg().call?Math.max(s-st.K,0):Math.max(st.K-s,0);
+  const pay=s=>(cfg().buy?1:-1)*(intrinsic(s)-st.prem);
+  const mness=()=>{const d=cfg().call?st.S-st.K:st.K-st.S;return d>0?'itm':d===0?'atm':'otm';};
+
+  function steps(){
+    const c=cfg(), opt=c.call?'call':'put';
+    return [
+      {eyebrow:'Opciones financieras',title:'Gráficas de Opciones',sub:'Cómo se lee la gráfica de resultado al vencimiento de las cuatro posiciones básicas, paso a paso.'},
+      {eyebrow:'El plano',title:'Dos ejes y un cero',sub:'Toda gráfica de opciones se dibuja sobre el mismo plano. El eje vertical tiene el <b>cero al centro</b>: hacia arriba es positivo (+) y hacia abajo negativo (−).'},
+      {eyebrow:'Eje X',title:'Lo que se mueve en el eje X',sub:'El eje horizontal es el <b>precio del activo subyacente al vencimiento</b>. A la izquierda el precio es menor; hacia la derecha, el precio sube.'},
+      {eyebrow:'Eje Y',title:'Lo que se mueve en el eje Y',sub:'El eje vertical es el <b>resultado de la posición</b>. Todo lo que queda arriba del cero es ganancia y todo lo que queda abajo es pérdida.'},
+      {eyebrow:'Referencia',title:'Precio actual del subyacente (S)',sub:'S es el precio al que cotiza hoy el activo. Lo marcamos como una línea vertical para tenerlo de referencia sobre el eje X.'},
+      {eyebrow:'Referencia',title:'Precio de ejercicio (strike, K)',sub:c.s5},
+      {eyebrow:'Moneyness',title:'¿In, at u out of the money?',sub:c.call
+        ?'En un call se compara S contra K. Si <b>S &gt; K</b> está in the money; si <b>S = K</b>, at the money; si <b>S &lt; K</b>, out of the money.'
+        :'En un put la comparación es al revés que en un call. Si <b>S &lt; K</b> está in the money; si <b>S = K</b>, at the money; si <b>S &gt; K</b>, out of the money.'},
+      {eyebrow:c.name,title:c.buy?'Se paga una prima':'Se recibe una prima',sub:c.s7},
+      {eyebrow:c.name,title:'La prima cambia con el moneyness',sub:'Con el subyacente en el mismo precio, elige un strike in, at u out of the money. '
+        +(c.buy?'Quien compra un '+opt+' <b>paga más</b>':'Quien vende un '+opt+' <b>cobra más</b>')
+        +' in the money porque la prima ya trae valor intrínseco; out of the money la prima es la más baja porque solo tiene valor en el tiempo.'},
+      {eyebrow:c.name,title:'Punto de equilibrio',sub:c.s8},
+      {eyebrow:c.name,title:c.buy?'Ganancia potencial':'Pérdida potencial',sub:c.s9},
+      {eyebrow:'Resumen',title:c.name,sub:'Arrastra sobre la gráfica para leer el resultado a cualquier precio al vencimiento.'}
+    ];
+  }
+  const N=12, SPLIT=8;
+  const LAYERS={tint:[3,3],axes:[1,99],xlab:[2,99],sweep:[2,2],ylab:[3,99],spot:[4,99],strike:[5,99],
+    money:[6,6],flatArea:[7,99],prem:[7,99],split:[8,8],be:[9,99],tailArea:[10,99],tail:[10,99],probe:[11,11]};
+
+  // Selector de posición
+  const seg=$('seg');
+  KEYS.forEach(k=>{const b=document.createElement('button');b.textContent=STRATS[k].name;b.dataset.s=k;
+    b.addEventListener('click',()=>setStrat(k,true));seg.appendChild(b);});
+  function setStrat(k,user){
+    if(!STRATS[k])return;
+    const changed=k!==st.key; st.key=k;
+    st.K=clamp(st.K,kLim());
+    st.S=clamp(st.S,[Math.max(LIM.S[0],st.K-GAP),Math.min(LIM.S[1],st.K+GAP)]);
+    [...seg.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===k));
+    if(user){ try{ if(location.hash.slice(1)!==k) location.hash=k; }catch(e){} }
+    paintHeader(true);
+    render();
+    if(changed) redraw();
+  }
+  function redraw(){
+    const els=['flat','rise','tail'].map($).filter(el=>el.closest('.layer').classList.contains('on'));
+    els.forEach(el=>{el.style.transition='none';el.style.strokeDashoffset='1';});
+    void document.body.offsetWidth;
+    els.forEach(el=>{el.style.transition='';el.style.strokeDashoffset='';});
+  }
+  window.addEventListener('hashchange',()=>setStrat(location.hash.slice(1),false));
+
+  // Navegación
+  const dots=$('dots');
+  for(let i=0;i<N;i++){const b=document.createElement('button');b.setAttribute('aria-label','Ir al paso '+i);
+    b.addEventListener('click',()=>go(i));dots.appendChild(b);}
+  $('prev').addEventListener('click',()=>go(st.step-1));
+  $('home').addEventListener('click',()=>go(0));
+  $('next').addEventListener('click',()=>go(st.step+1));
+  document.addEventListener('keydown',e=>{
+    const onBtn=e.target.closest&&e.target.closest('button');
+    if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){ if(onBtn&&(e.key===' '||e.key==='Enter'))return; e.preventDefault(); go(st.step+1); }
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); go(st.step-1); }
+    else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  });
+
+  function paintHeader(anim){
+    const i=st.step, s=steps()[i];
+    $('app').classList.toggle('cover',i===0);
+    $('eyebrow').textContent=s.eyebrow;
+    $('count').textContent=i?('Paso '+i+' de '+(N-1)):'';
+    $('title').textContent=s.title;
+    $('sub').innerHTML=s.sub;
+    if(anim)[$('eyebrow'),$('title'),$('sub'),$('extra')].forEach(el=>{el.classList.remove('fx');void el.offsetWidth;el.classList.add('fx');});
+  }
+  function go(i){
+    i=Math.max(0,Math.min(N-1,i));
+    if(i===st.step&&document.body.dataset.ready)return;
+    st.step=i; document.body.dataset.ready='1';
+    paintHeader(true);
+    Object.entries(LAYERS).forEach(([k,[a,b]])=>$('L-'+k).classList.toggle('on',i>=a&&i<=b));
+    document.querySelectorAll('[data-from]').forEach(el=>el.hidden=i<+el.dataset.from);
+    [...dots.children].forEach((b,j)=>{ if(j===i)b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
+    $('prev').disabled=i===0; $('next').disabled=i===N-1; $('home').hidden=i===0;
+    render();
+  }
+
+  // Contenido extra por paso
+  function extra(){
+    const c=cfg(), i=st.step, B=be(), m=mness(), sgn=c.call?'+':'−';
+    const cmp=st.S>st.K?'&gt;':st.S===st.K?'=':'&lt;';
+    const pill=`<span class="pill ${m}"><span class="dot"></span>S ${money(st.S)} ${cmp} K ${money(st.K)} · ${MN[m]}</span>`;
+    const maxPut=st.K-st.prem;
+    if(i===0){
+      // Forma de cada gráfica: tramo de la prima y tramo después del punto de equilibrio
+      const SH={'compra-call':['6,46 60,46 72,35','72,35 112,6',true],'venta-call':['6,24 60,24 72,35','72,35 112,64',false],
+                'compra-put':['114,46 60,46 48,35','48,35 8,6',true],'venta-put':['114,24 60,24 48,35','48,35 8,64',false]};
+      const cards=KEYS.map(k=>{const [a,b,buy]=SH[k], s=STRATS[k];
+        return `<button class="pick" data-start="${k}" aria-pressed="${k===st.key}">
+          <svg viewBox="0 0 120 70" aria-hidden="true"><line x1="4" x2="116" y1="35" y2="35" stroke="var(--rule)" stroke-width="1.5"/>
+          <polyline points="${a}" fill="none" stroke="var(${buy?'--loss':'--gain'})" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="${b}" fill="none" stroke="var(${buy?'--gain':'--loss'})" stroke-width="3.5" stroke-linecap="round"/></svg>
+          <b>${s.name}</b><span>${s.en}</span></button>`;}).join('');
+      return `<div class="picks">${cards}</div><p class="start">Elige una posición para comenzar, o presiona <kbd>→</kbd> para empezar con la seleccionada</p>`;
+    }
+    if(i===4) return '<p class="hint">Arrastra la etiqueta azul o usa los botones de abajo para mover S.</p>';
+    if(i===5) return '<p class="hint">Arrastra la etiqueta morada para mover el strike.</p>';
+    if(i===6) return pill+['itm','atm','otm'].map(k=>`<button class="chip" data-m="${k}" aria-pressed="${k===m}">${k.toUpperCase()}</button>`).join('');
+    if(i===8){
+      const iv=Math.max(c.call?st.S-st.K:st.K-st.S,0), tv=st.prem-iv, col=c.buy?'--loss':'--gain';
+      return ['itm','atm','otm'].map(k=>`<button class="chip" data-m="${k}" aria-pressed="${k===m}">${k.toUpperCase()}</button>`).join('')
+        +`<span class="kv"><span>${c.buy?'Pagas':'Cobras'}</span><strong style="color:var(${col})">${money(st.prem)}</strong>
+          <span>= ${money(iv)} intrínseco + ${money(tv)} valor en el tiempo</span></span>
+          <span class="hint">Modelo ilustrativo Black-Scholes: volatilidad 40%, plazo 6 meses, tasa 0%.</span>`;
+    }
+    if(i===7) return (c.buy
+      ?`<span class="kv"><span>Pérdida máxima</span><strong style="color:var(--loss)">= prima = ${money(st.prem)}</strong></span>`
+      :`<span class="kv"><span>Ganancia máxima</span><strong style="color:var(--gain)">= prima = ${money(st.prem)}</strong></span>`)
+      +`<span class="pill ${m}"><span class="dot"></span>Opción ${MN[m].toLowerCase()}</span>`;
+    if(i===9) return `<span class="kv"><span>Punto de equilibrio</span><strong style="color:var(--be)">K ${sgn} prima = ${money(st.K)} ${sgn} ${money(st.prem)} = ${money(B)}</strong></span>`;
+    if(i===10){
+      const p=c.call?B+10:B-10, r=c.buy?10:-10;
+      return `<span class="kv"><span>Ejemplo</span><strong style="color:var(${r>0?'--gain':'--loss'})">si el precio llega a ${money(p)}, el resultado es ${signed(r)}</strong></span>`;
+    }
+    if(i===11){
+      const res=c.call?'máx(S<sub>T</sub> − K, 0)':'máx(K − S<sub>T</sub>, 0)';
+      const cards=[
+        [c.buy?'Pérdida máxima':'Ganancia máxima', `Prima · ${money(st.prem)}`, c.buy?'--loss':'--gain'],
+        ['Punto de equilibrio', `K ${sgn} prima · ${money(B)}`, '--be'],
+        ['Resultado', c.buy?`${res} − prima`:`prima − ${res}`, '--ink'],
+        [c.buy?'Ganancia máxima':'Pérdida máxima', c.call?'Ilimitada':`K − prima · ${money(maxPut)}`, c.buy?'--gain':'--loss']
+      ];
+      return '<div class="formulas">'+cards.map(([a,b,col])=>`<div><small>${a}</small><b style="color:var(${col})">${b}</b></div>`).join('')+'</div>';
+    }
+    return '';
+  }
+  $('extra').addEventListener('click',e=>{
+    const p=e.target.closest('[data-start]'); if(p){ setStrat(p.dataset.start,true); go(1); return; }
+    const b=e.target.closest('[data-m]'); if(!b)return;
+    // Con S fijo se elige el strike: call ITM = S − 10, put ITM = S + 10
+    const m=b.dataset.m, d=cfg().call?-10:10;
+    tweenK(m==='itm'?st.S+d:m==='atm'?st.S:st.S-d);
+  });
+  let tw=0;
+  function tweenK(target){
+    const [a,b]=kLim(); target=clamp(target,[Math.max(a,st.S-GAP),Math.min(b,st.S+GAP)]);
+    const from=st.K, t0=performance.now(), dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:550, id=++tw;
+    const tick=now=>{ if(id!==tw)return;
+      const t=dur?Math.min(1,(now-t0)/dur):1, e=1-Math.pow(1-t,3);
+      st.K=t<1?from+(target-from)*e:target; render(); if(t<1)requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+
+  // Dibujo
+  const set=(id,attrs)=>{const el=$(id);for(const k in attrs)el.setAttribute(k,attrs[k]);};
+  // Área de la prima partida en valor intrínseco (sólido) y valor en el tiempo (claro)
+  function renderSplit(c,flatCol,xEdge,xK){
+    const sg=c.buy?-1:1, iv=Math.max(c.call?st.S-st.K:st.K-st.S,0), tv=Math.max(0,st.prem-iv);
+    const x0=Math.min(xEdge,xK), w=Math.abs(xK-xEdge), cx=x0+w/2;
+    const yI=py(sg*iv), yP=py(sg*st.prem);
+    set('ivBand',{x:x0,width:w,y:Math.min(Y0,yI),height:Math.abs(yI-Y0),fill:flatCol,'fill-opacity':.8});
+    set('tvBand',{x:x0,width:w,y:Math.min(yI,yP),height:Math.abs(yP-yI),fill:flatCol,'fill-opacity':.2});
+    $('ivTxt').textContent=money(iv)+' valor intrínseco'; set('ivTxt',{x:cx,y:(Y0+yI)/2+5});
+    $('ivTxt').style.opacity=iv*8.5>=22?1:0;
+    $('tvTxt').textContent=money(tv)+' valor en el tiempo'; set('tvTxt',{x:cx,y:(yI+yP)/2+5}); $('tvTxt').style.fill=flatCol;
+    $('tvTxt').style.opacity=tv*8.5>=22?1:0;
+
+    // Escalones: las tres primas posibles (ITM / ATM / OTM) con el mismo S, cada una hasta su strike
+    const d=c.call?-10:10, cur=mness();
+    let g='';
+    [['itm',st.S+d],['atm',st.S],['otm',st.S-d]].forEach(([m,K])=>{
+      const p=premOf(st.S,K,c.call), xk=px(K), yp=py(sg*p), on=m===cur;
+      const rx=Math.min(xEdge,xk), rw=Math.abs(xk-xEdge);
+      g+=`<rect x="${rx}" y="${Math.min(Y0,yp)}" width="${rw}" height="${Math.abs(yp-Y0)}" fill="none"
+            stroke="${flatCol}" stroke-width="${on?3:1.8}" stroke-dasharray="${on?'none':'7 6'}" opacity="${on?1:.75}"/>`;
+      const tx=c.call?xk+10:xk-10, ty=sg<0?yp+20:yp-10;
+      g+=`<text x="${tx}" y="${ty}" text-anchor="${c.call?'start':'end'}" class="halo"
+            style="font-size:${on?17:15}px;font-weight:${on?700:600};fill:${on?flatCol:'var(--ink-2)'}">${m.toUpperCase()} · ${money(p)}</text>`;
+    });
+    $('ghosts').innerHTML=g;
+  }
+
+  function render(){
+    st.prem=premOf(st.S,st.K,cfg().call);
+    const c=cfg(), {S,K,prem,T}=st, B=be();
+    const flatV=c.buy?-prem:prem;
+    const flatCol=c.buy?'var(--loss)':'var(--gain)', tailCol=c.buy?'var(--gain)':'var(--loss)';
+    const flatTint=c.buy?'var(--loss-tint)':'var(--gain-tint)', tailTint=c.buy?'var(--gain-tint)':'var(--loss-tint)';
+    const xK=px(K), xS=px(S), xB=px(B), yF=py(flatV);
+    const xEdge=c.call?90:XR;
+    const pEnd=c.call?Math.min(P1,B+VMAX):Math.max(PL,B-VMAX);
+    const xE=px(pEnd), yE=py(pay(pEnd));
+
+    // Etiqueta del eje X en el lado libre
+    const xAbove=(c.call&&!c.buy)||(!c.call&&c.buy);
+    $('xLbl').setAttribute('y',xAbove?272:320);
+
+    // Moneyness: a la izquierda de K y a la derecha de K
+    const left=c.call?'otm':'itm', right=c.call?'itm':'otm', m=mness();
+    const col=k=>k==='itm'?'var(--gain)':'var(--loss)';
+    set('mL',{x2:xK,stroke:col(left),opacity:m===left?.85:.25});
+    set('mR',{x1:xK,stroke:col(right),opacity:m===right?.85:.25});
+    set('tL',{x:(px(P0)+xK)/2}); $('tL').textContent=MN[left]; $('tL').style.fill=col(left);
+    set('tR',{x:(xK+946)/2}); $('tR').textContent=MN[right]; $('tR').style.fill=col(right);
+    set('tATM',{x:xK}); $('tATM').style.opacity=m==='atm'?1:0;
+
+    // S
+    set('sLine',{x1:xS,x2:xS});
+    const sTxt='Precio actual S = '+money(S); $('sLbl').textContent=sTxt; set('sLbl',{x:xS});
+    const ws=sTxt.length*8.3+26; set('sPill',{x:xS-ws/2,width:ws});
+
+    // K
+    set('kTick',{x1:xK,x2:xK}); set('kGuide',{x1:xK,x2:xK});
+    set('kHit',{cx:xK}); set('kDot',{cx:xK});
+    const kTxt='Strike K = '+money(K); $('kLbl').textContent=kTxt; set('kLbl',{x:xK});
+    const wk=kTxt.length*8.3+26; set('kPill',{x:xK-wk/2,width:wk});
+
+    // Prima
+    set('premBar',{y2:yF,stroke:flatCol});
+    $('premTick').textContent=(c.buy?'−':'+')+prem; set('premTick',{y:yF+6}); $('premTick').style.fill=flatCol;
+    set('flat',{d:`M${xEdge} ${yF} H${xK}`,stroke:flatCol});
+    $('premLbl').innerHTML=`${c.buy?'Prima pagada':'Prima recibida'} <tspan style="font-weight:600;fill:${flatCol}">${c.buy?'−':'+'}${money(prem)}</tspan>`;
+    set('premLbl',{x:c.call?104:xK+16,y:flatV<0?yF-13:yF+26});
+    // En el paso de moneyness el área es solo el rectángulo de la prima (sin el tramo hacia el equilibrio)
+    set('flatArea',{d:st.step===SPLIT?`M${xEdge} ${Y0} V${yF} H${xK} V${Y0} Z`:`M${xEdge} ${Y0} V${yF} H${xK} L${xB} ${Y0} Z`,fill:flatTint});
+    $('premSw').style.background=flatCol;
+
+    // Equilibrio
+    set('rise',{d:`M${xK} ${yF} L${xB} ${Y0}`,stroke:flatCol});
+    set('beDot',{cx:xB});
+    $('beLbl').innerHTML=`Equilibrio <tspan style="font-weight:600;fill:var(--be)">${money(B)}</tspan>`;
+    set('beLbl',{x:c.call?xB-14:xB+14,y:flatV<0?262:318,'text-anchor':c.call?'end':'start'});
+
+    // Cola: ganancia o pérdida potencial
+    set('tail',{d:`M${xB} ${Y0} L${xE} ${yE}`,stroke:tailCol});
+    set('tailArea',{d:`M${xB} ${Y0} L${xE} ${yE} V${Y0} Z`,fill:tailTint});
+    const a=Math.atan2(yE-Y0,xE-xB);
+    set('tailArrow',{transform:`translate(${xE+6*Math.cos(a)} ${yE+6*Math.sin(a)}) rotate(${a*180/Math.PI})`,fill:tailCol});
+    // Etiqueta junto al eje, dentro del área de la cola
+    const tailUp=pay(pEnd)>0, tx=c.call?xE-10:xE+10, anc=c.call?'end':'start';
+    set('tailLbl',{x:tx,y:tailUp?252:318,'text-anchor':anc}); set('tailL1',{x:tx}); set('tailL2',{x:tx});
+    $('tailLbl').style.fill=tailCol;
+    $('tailL1').textContent=c.buy?'Ganancia potencial':'Pérdida potencial';
+    $('tailL2').textContent=c.call?'ilimitada':'máxima '+money(K-prem);
+
+    renderSplit(c,flatCol,xEdge,xK);
+    $('premLbl').style.opacity=st.step===SPLIT?0:1;
+
+    // Sonda
+    const v=pay(T), vc=Math.max(-VMAX,Math.min(VMAX,v)), xT=px(T), yT=py(vc);
+    set('pLine',{x1:xT,x2:xT,y2:yT}); set('pDot',{cx:xT,cy:yT});
+    set('pLbl',{x:Math.max(190,Math.min(880,xT)),y:v>=0?yT-22:yT+34});
+    $('pLbl').innerHTML=`S<tspan baseline-shift="sub" style="font-size:11px">T</tspan> = ${money(T)}  →  <tspan style="fill:${v>0?'var(--gain)':v<0?'var(--loss)':'var(--be)'}">${signed(v)}</tspan>`;
+
+    // Pie y extra
+    $('vS').textContent=money(S); $('vK').textContent=money(K); $('vP').textContent=money(prem);
+    const ex=$('extra'), html=extra(); if(ex.dataset.h!==html){ex.innerHTML=html;ex.dataset.h=html;}
+  }
+
+  // Botones de parámetros
+  $('params').addEventListener('click',e=>{
+    const b=e.target.closest('[data-k]'); if(!b)return;
+    const k=b.dataset.k; setVal(k,st[k]+(+b.dataset.d));
+  });
+
+  // Arrastre en la gráfica
+  const svg=$('chart');
+  function svgX(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse()).x;}
+  function drag(el,key){
+    el.addEventListener('pointerdown',e=>{
+      e.preventDefault(); el.setPointerCapture(e.pointerId);
+      const move=ev=>setVal(key,Math.round(pFromX(svgX(ev))));
+      move(e);
+      const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);};
+      el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+    });
+  }
+  drag($('sHandle'),'S'); drag($('kHandle'),'K'); drag($('probeHit'),'T');
+
+  let h=''; try{h=location.hash.slice(1);}catch(e){}
+  go(0);
+  setStrat(STRATS[h]?h:'compra-call',false);
+})();
+</script>
