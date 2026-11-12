@@ -84,6 +84,27 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.2vw,48px);l
 .formulas div{background:var(--soft);border-radius:14px;padding:10px 14px;min-width:0}
 .formulas small{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--ink-2);text-transform:uppercase}
 .formulas b{display:block;font-size:16px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+/* Casillas de captura (S, K, S_T) y ejercicio */
+.num{font:inherit;font-size:16px;font-weight:600;color:var(--ink);width:8ch;min-width:0;padding:5px 8px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);text-align:right;font-variant-numeric:tabular-nums}
+.num:focus{outline:2px solid var(--spot);outline-offset:1px}
+.num::placeholder{color:var(--ink-3);font-weight:400}
+.num[aria-invalid="true"]{border-color:var(--loss);color:var(--loss)}
+select.num{width:auto;text-align:left;cursor:pointer}
+.ex{display:flex;flex-direction:column;gap:10px;width:100%}
+.ex-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.ex-h{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);min-width:76px}
+.exf{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--ink-2)}
+.mk{font-style:normal;font-weight:700;min-width:1em}
+.mk.ok,.ex-fb .ok{color:var(--gain)}
+.mk.no,.ex-fb .no{color:var(--loss)}
+.chip.go{background:var(--spot);border-color:var(--spot);color:#fff}
+.ex-fb{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.ex-fb:empty{display:none}
+.ex-fb p{margin:0}
+.ex-fb b{color:var(--ink)}
+.ex-fb .ex-score{grid-column:1/-1;font-weight:600;color:var(--ink)}
+.ex-fb .ex-score.ok{color:var(--gain)}
+@media (max-width:760px){.ex-fb{grid-template-columns:minmax(0,1fr)}.ex-h{min-width:0;width:100%}}
 @media (max-width:760px){.formulas{grid-template-columns:repeat(2,minmax(0,1fr))}.head{min-height:0}
   /* Celular: la página crece hacia abajo en vez de encimar el texto sobre la gráfica */
   .app{height:auto;min-height:100vh;min-height:100dvh}}
@@ -128,7 +149,7 @@ svg#chart{width:100%;height:100%;max-height:100%;overflow:visible;font-family:va
 .dots{display:flex;flex-wrap:wrap;gap:7px}
 /* Celular: la barra de pasos cabe en una línea (Portada solo con ícono, puntos más juntos) */
 @media (max-width:520px){.nav{gap:10px}.homebtn{width:40px;padding:0;justify-content:center;font-size:0;gap:0}.dots{gap:5px}}
-@media (max-width:360px){.nav{gap:6px}.dots{gap:3px}}
+@media (max-width:360px){.nav{gap:6px}.dots{gap:3px}.dots button{width:6px;height:6px}.dots button[aria-current="step"]{width:16px}}
 .dots button{width:8px;height:8px;padding:0;border-radius:50%;border:0;background:var(--rule);cursor:pointer;transition:width .3s ease,background .3s ease}
 .dots button[aria-current="step"]{width:22px;border-radius:4px;background:var(--ink)}
 button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
@@ -280,11 +301,11 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
 
   <footer class="foot">
     <div class="params" id="params">
-      <div class="field" data-from="4" hidden><span class="sw" style="background:var(--spot)"></span>Precio actual S
-        <button class="step-btn" data-k="S" data-d="-1" aria-label="Bajar precio actual">−</button><span class="v" id="vS"></span><button class="step-btn" data-k="S" data-d="1" aria-label="Subir precio actual">+</button></div>
-      <div class="field" data-from="5" hidden><span class="sw" style="background:var(--strike)"></span>Strike K
-        <button class="step-btn" data-k="K" data-d="-1" aria-label="Bajar strike">−</button><span class="v" id="vK"></span><button class="step-btn" data-k="K" data-d="1" aria-label="Subir strike">+</button></div>
-      <div class="field" data-from="7" hidden><span class="sw" id="premSw"></span>Prima <span class="v" id="vP"></span><span class="note">calculada</span></div>
+      <div class="field" data-from="4" data-to="11" hidden><span class="sw" style="background:var(--spot)"></span><label for="inS">Precio actual S</label>
+        <button class="step-btn" data-k="S" data-d="-1" aria-label="Bajar precio actual">−</button><input class="num" id="inS" data-in="S" inputmode="decimal" autocomplete="off"><button class="step-btn" data-k="S" data-d="1" aria-label="Subir precio actual">+</button></div>
+      <div class="field" data-from="5" data-to="11" hidden><span class="sw" style="background:var(--strike)"></span><label for="inK">Strike K</label>
+        <button class="step-btn" data-k="K" data-d="-1" aria-label="Bajar strike">−</button><input class="num" id="inK" data-in="K" inputmode="decimal" autocomplete="off"><button class="step-btn" data-k="K" data-d="1" aria-label="Subir strike">+</button></div>
+      <div class="field" data-from="7" data-to="11" hidden><span class="sw" id="premSw"></span>Prima <span class="v" id="vP"></span><span class="note">calculada</span></div>
       <span class="note" data-from="4" hidden>Cifras ilustrativas, por acción</span>
     </div>
     <nav class="nav" aria-label="Pasos">
@@ -299,17 +320,30 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
 
 <script>
 (function(){
-  // Escalas: precio 55–145 en X, resultado −30…+30 en Y (cero al centro)
-  const P0=55, P1=145, Y0=290, VMAX=30, XL=96, XR=940;
+  // Escala dinámica: el eje X muestra los precios [P0, P1] y el eje Y va de −VMAX a +VMAX.
+  // Con S = $90 y K = $100 queda en $55–$145 y ±$30; con otros precios se ajusta sola (fitScale).
+  const Y0=290, XL=96, XR=940;
+  let P0=55, P1=145, VMAX=30, YS=8.5;
   const px=p=>130+(p-P0)*(800/(P1-P0));
-  const py=v=>Y0-v*8.5;
+  const py=v=>Y0-v*YS;
   const pFromX=x=>P0+(x-130)*(P1-P0)/800;
-  const PL=pFromX(XL);
   const $=id=>document.getElementById(id);
-  const money=v=>'$'+Math.round(v);
-  const signed=v=>(v>0?'+$':v<0?'−$':'$')+Math.abs(Math.round(v));
+  const r2=v=>Math.round(v*100)/100;
+  const fmt=v=>{const r=r2(v);return r.toLocaleString('es-MX',{minimumFractionDigits:Number.isInteger(r)?0:2,maximumFractionDigits:2});};
+  const money=v=>'$'+fmt(v);
+  const signed=v=>{const r=r2(v);return (r>0?'+$':r<0?'−$':'$')+fmt(Math.abs(r));};
   const clamp=(v,[a,b])=>Math.max(a,Math.min(b,v));
   const MN={itm:'In the money',atm:'At the money',otm:'Out of the money'};
+  // Redondeo "bonito" (1, 2, 2.5, 5 × 10ⁿ) para pasos y distancias proporcionales al precio
+  const nice=x=>{const e=Math.pow(10,Math.floor(Math.log10(x))), f=x/e; return +((f<1.5?1:f<2.25?2:f<3.5?2.5:f<7.5?5:10)*e).toPrecision(6);};
+  const stepOf=v=>nice(Math.max(v,1)/100);           // $90 → 1, $1,250 → 10, $5 → 0.05
+  const rnd=(v,q)=>+(Math.round(v/q)*q).toFixed(4);
+  // Lee lo que se escribe: acepta $, espacios, signo − y comas de miles ("1,250"); "6,5" se lee como 6.5
+  function parseNum(s){
+    s=String(s||'').replace(/[\s$]/g,'').replace(/[−–]/g,'-');
+    if(/,\d{3}(\D|$)/.test(s)||s.includes('.')) s=s.replace(/,/g,''); else s=s.replace(',','.');
+    return s===''||s==='-'||s==='+'?NaN:Number(s);
+  }
 
   // Las cuatro posiciones
   const STRATS={
@@ -335,31 +369,50 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
       s9:'Por debajo del punto de equilibrio, cada peso que baja el subyacente es un peso de pérdida. La pérdida máxima es <b>K − prima</b>, si el precio llegara a cero; la ganancia está limitada a la prima.'}
   };
   const KEYS=Object.keys(STRATS);
-  const KLIM={call:[75,105],put:[80,115]};
-  const LIM={S:[57,143],T:[57,143]};
-  const GAP=12; // S se mantiene a no más de $12 del strike
-  const st={key:'compra-call',step:0,S:90,K:100,prem:6,T:120};
+  const MIN=1; // S y K se capturan desde $1, sin tope
+  const st={key:'compra-call',step:0,S:90,K:100,prem:6,T:120,smooth:false,reveal:false,
+    ex:{T:null,ans:{},res:null}};
   const cfg=()=>STRATS[st.key];
-  const kLim=()=>cfg().call?KLIM.call:KLIM.put;
 
-  // Prima ilustrativa: Black-Scholes con volatilidad 40%, 6 meses y tasa 0%, redondeada a pesos
+  // Prima ilustrativa: Black-Scholes con volatilidad 40%, 6 meses y tasa 0%.
+  // Se redondea a pesos con precios desde $50 (a 10 o 1 centavo con precios menores);
+  // mientras se anima el strike no se redondea, para que el área crezca suave.
   const VOL=0.40, TT=0.5;
   function ncdf(x){const t=1/(1+0.2316419*Math.abs(x)),d=0.3989423*Math.exp(-x*x/2);
     const p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
   function bs(S,K,call){const s=VOL*Math.sqrt(TT),d1=(Math.log(S/K)+s*s/2)/s,d2=d1-s;
     const c=S*ncdf(d1)-K*ncdf(d2);return call?c:c-S+K;}
-  // Redondeada a pesos; sin redondear mientras se anima el strike, para que el área crezca suave
-  const premOf=(S,K,call)=>{const r=bs(S,K,call);return Math.max(1,Number.isInteger(K)&&Number.isInteger(S)?Math.round(r):r);};
-  function setVal(key,v){
-    if(key==='S') st.S=clamp(v,[Math.max(LIM.S[0],st.K-GAP),Math.min(LIM.S[1],st.K+GAP)]);
-    else if(key==='K'){const [a,b]=kLim(); st.K=clamp(v,[Math.max(a,st.S-GAP),Math.min(b,st.S+GAP)]);}
-    else st[key]=clamp(v,LIM[key]);
-    render();
-  }
+  const premQ=(S,K)=>{const v=Math.max(S,K);return v>=50?1:v>=5?0.1:0.01;};
+  const premOf=(S,K,call)=>{const q=premQ(S,K), r=bs(S,K,call);return Math.max(q,st.smooth?r:rnd(r,q));};
   const be=()=>cfg().call?st.K+st.prem:st.K-st.prem;
   const intrinsic=s=>cfg().call?Math.max(s-st.K,0):Math.max(st.K-s,0);
   const pay=s=>(cfg().buy?1:-1)*(intrinsic(s)-st.prem);
   const mness=()=>{const d=cfg().call?st.S-st.K:st.K-st.S;return d>0?'itm':d===0?'atm':'otm';};
+
+  // Ajusta la escala para que S, K, el punto de equilibrio (y S_T en el ejercicio) quepan
+  // con espacio para los tramos de la gráfica. Si caben con K al centro, se deja K al centro.
+  function fitScale(){
+    const c=cfg(), {S,K}=st, prem=premOf(S,K,c.call), B=c.call?K+prem:K-prem;
+    const pts=[S,K,B]; if(st.step===EX&&st.ex.T!=null) pts.push(st.ex.T);
+    const lo=Math.min(...pts), hi=Math.max(...pts), W=Math.max(0.9*K,(hi-lo)*1.8);
+    let a=K-W/2;
+    if(lo<a+0.12*W||hi>a+0.88*W) a=lo-(c.call?0.4:0.6)*(W-(hi-lo));
+    P0=Math.max(0,a); P1=P0+W;
+    // El eje Y también deja espacio a la prima actual y a la prima ITM que se muestra en el paso 8
+    const D=nice(S/10), pITM=premOf(S,Math.max(MIN,c.call?S-D:S+D),c.call);
+    VMAX=Math.max(W/3,1.5*Math.max(prem,pITM)); YS=255/VMAX;
+    if(!(st.T>=P0&&st.T<=P1)) st.T=Math.max(MIN,rnd(c.call?B+0.155*W:B-0.155*W,stepOf(K)));
+  }
+  const needsFit=()=>{const m=0.06*(P1-P0);return st.prem*1.4>VMAX||[st.S,st.K,be()].some(v=>v<P0+m||v>P1-m);};
+
+  // opt: 'fit' reajusta la escala; 'auto' solo si algo se sale
+  function setVal(key,v,opt){
+    if(!isFinite(v))return;
+    if(key==='T') st.T=clamp(v,[Math.max(0,P0+0.02*(P1-P0)),P1-0.02*(P1-P0)]);
+    else { st[key]=Math.max(MIN,v); exReset(); }
+    if(opt==='fit'||(opt==='auto'&&needsFit())){ st.prem=premOf(st.S,st.K,cfg().call); fitScale(); }
+    render();
+  }
 
   function steps(){
     const c=cfg(), opt=c.call?'call':'put';
@@ -379,12 +432,19 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
         +' in the money porque la prima ya trae valor intrínseco; out of the money la prima es la más baja porque solo tiene valor en el tiempo.'},
       {eyebrow:c.name,title:'Punto de equilibrio',sub:c.s8},
       {eyebrow:c.name,title:c.buy?'Ganancia potencial':'Pérdida potencial',sub:c.s9},
-      {eyebrow:'Resumen',title:c.name,sub:'Arrastra sobre la gráfica para leer el resultado a cualquier precio al vencimiento.'}
+      {eyebrow:'Resumen',title:c.name,sub:'Arrastra sobre la gráfica para leer el resultado a cualquier precio al vencimiento. Luego sigue al <b>ejercicio</b> para practicar con tus propios precios.'},
+      {eyebrow:'Práctica · '+c.name,title:'Ejercicio',sub:'Captura el precio actual (S), el strike (K) y un precio al vencimiento (S<sub>T</sub>). Responde y presiona <b>Revisar</b>: la gráfica completa aparece al revisar.'}
     ];
   }
-  const N=12, SPLIT=8;
+  const N=13, SPLIT=8, RES=11, EX=12;
   const LAYERS={tint:[3,3],axes:[1,99],xlab:[2,99],sweep:[2,2],ylab:[3,99],spot:[4,99],strike:[5,99],
-    money:[6,6],flatArea:[7,99],prem:[7,99],split:[8,8],be:[9,99],tailArea:[10,99],tail:[10,99],probe:[11,11]};
+    money:[6,6],flatArea:[7,RES],prem:[7,RES],split:[8,8],be:[9,RES],tailArea:[10,RES],tail:[10,RES],probe:[RES,RES]};
+  const REVEAL=['flatArea','prem','be','tailArea','tail','probe']; // capas que el ejercicio muestra al revisar
+  const LAYER_ON=k=>$('L-'+k).classList.contains('on');
+  function applyLayers(){
+    const i=st.step;
+    Object.entries(LAYERS).forEach(([k,[a,b]])=>$('L-'+k).classList.toggle('on',(i>=a&&i<=b)||(i===EX&&st.reveal&&REVEAL.includes(k))));
+  }
 
   // Selector de posición
   const seg=$('seg');
@@ -393,10 +453,10 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
   function setStrat(k,user){
     if(!STRATS[k])return;
     const changed=k!==st.key; st.key=k;
-    st.K=clamp(st.K,kLim());
-    st.S=clamp(st.S,[Math.max(LIM.S[0],st.K-GAP),Math.min(LIM.S[1],st.K+GAP)]);
     [...seg.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===k));
     if(user){ try{ if(location.hash.slice(1)!==k) location.hash=k; }catch(e){} }
+    if(changed){ exReset(); applyLayers(); }
+    st.prem=premOf(st.S,st.K,cfg().call); fitScale();
     paintHeader(true);
     render();
     if(changed) redraw();
@@ -411,12 +471,14 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
 
   // Navegación
   const dots=$('dots');
-  for(let i=0;i<N;i++){const b=document.createElement('button');b.setAttribute('aria-label','Ir al paso '+i);
+  for(let i=0;i<N;i++){const b=document.createElement('button');b.setAttribute('aria-label',i===EX?'Ir al ejercicio':'Ir al paso '+i);
     b.addEventListener('click',()=>go(i));dots.appendChild(b);}
   $('prev').addEventListener('click',()=>go(st.step-1));
   $('home').addEventListener('click',()=>go(0));
   $('next').addEventListener('click',()=>go(st.step+1));
   document.addEventListener('keydown',e=>{
+    // Mientras se escribe en una casilla, las teclas no cambian de paso
+    if(e.target.closest&&e.target.closest('input,select,textarea'))return;
     const onBtn=e.target.closest&&e.target.closest('button');
     if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){ if(onBtn&&(e.key===' '||e.key==='Enter'))return; e.preventDefault(); go(st.step+1); }
     else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); go(st.step-1); }
@@ -427,7 +489,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     const i=st.step, s=steps()[i];
     $('app').classList.toggle('cover',i===0);
     $('eyebrow').textContent=s.eyebrow;
-    $('count').textContent=i?('Paso '+i+' de '+(N-1)):'';
+    $('count').textContent=i===EX?'Ejercicio':i?('Paso '+i+' de '+RES):'';
     $('title').textContent=s.title;
     $('sub').innerHTML=s.sub;
     if(anim)[$('eyebrow'),$('title'),$('sub'),$('extra')].forEach(el=>{el.classList.remove('fx');void el.offsetWidth;el.classList.add('fx');});
@@ -436,9 +498,11 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     i=Math.max(0,Math.min(N-1,i));
     if(i===st.step&&document.body.dataset.ready)return;
     st.step=i; document.body.dataset.ready='1';
+    if(i===EX){ if(st.ex.T==null) st.ex.T=exDefaultT(); st.reveal=!!st.ex.res; if(st.reveal) st.T=st.ex.T; }
+    st.prem=premOf(st.S,st.K,cfg().call); fitScale();
     paintHeader(true);
-    Object.entries(LAYERS).forEach(([k,[a,b]])=>$('L-'+k).classList.toggle('on',i>=a&&i<=b));
-    document.querySelectorAll('[data-from]').forEach(el=>el.hidden=i<+el.dataset.from);
+    applyLayers();
+    document.querySelectorAll('[data-from]').forEach(el=>el.hidden=i<+el.dataset.from||(el.dataset.to!=null&&i>+el.dataset.to));
     [...dots.children].forEach((b,j)=>{ if(j===i)b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
     $('prev').disabled=i===0; $('next').disabled=i===N-1; $('home').hidden=i===0;
     render();
@@ -462,8 +526,8 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
           <b>${s.name}</b><span>${s.en}</span></button>`;}).join('');
       return `<div class="picks">${cards}</div><p class="start">Elige una posición para comenzar, o presiona <kbd>→</kbd> para empezar con la seleccionada</p>`;
     }
-    if(i===4) return '<p class="hint">Arrastra la etiqueta azul o usa los botones de abajo para mover S.</p>';
-    if(i===5) return '<p class="hint">Arrastra la etiqueta morada para mover el strike.</p>';
+    if(i===4) return '<p class="hint">Escribe el precio en la casilla de abajo (desde $1), arrastra la etiqueta azul o usa − y +.</p>';
+    if(i===5) return '<p class="hint">Escribe el strike en la casilla de abajo o arrastra la etiqueta morada.</p>';
     if(i===6) return pill+['itm','atm','otm'].map(k=>`<button class="chip" data-m="${k}" aria-pressed="${k===m}">${k.toUpperCase()}</button>`).join('');
     if(i===8){
       const iv=Math.max(c.call?st.S-st.K:st.K-st.S,0), tv=st.prem-iv, col=c.buy?'--loss':'--gain';
@@ -478,10 +542,10 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
       +`<span class="pill ${m}"><span class="dot"></span>Opción ${MN[m].toLowerCase()}</span>`;
     if(i===9) return `<span class="kv"><span>Punto de equilibrio</span><strong style="color:var(--be)">K ${sgn} prima = ${money(st.K)} ${sgn} ${money(st.prem)} = ${money(B)}</strong></span>`;
     if(i===10){
-      const p=c.call?B+10:B-10, r=c.buy?10:-10;
-      return `<span class="kv"><span>Ejemplo</span><strong style="color:var(${r>0?'--gain':'--loss'})">si el precio llega a ${money(p)}, el resultado es ${signed(r)}</strong></span>`;
+      const E=nice(st.K/10), p=Math.max(0,c.call?B+E:B-E), r=pay(p);
+      return `<span class="kv"><span>Ejemplo</span><strong style="color:var(${r>0?'--gain':r<0?'--loss':'--be'})">si el precio llega a ${money(p)}, el resultado es ${signed(r)}</strong></span>`;
     }
-    if(i===11){
+    if(i===RES){
       const res=c.call?'máx(S<sub>T</sub> − K, 0)':'máx(K − S<sub>T</sub>, 0)';
       const cards=[
         [c.buy?'Pérdida máxima':'Ganancia máxima', `Prima · ${money(st.prem)}`, c.buy?'--loss':'--gain'],
@@ -491,24 +555,110 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
       ];
       return '<div class="formulas">'+cards.map(([a,b,col])=>`<div><small>${a}</small><b style="color:var(${col})">${b}</b></div>`).join('')+'</div>';
     }
+    if(i===EX){
+      // La estructura no cambia al escribir; los valores los pone syncEx() para no perder el foco
+      const num=(attr,label,ph)=>`<label class="exf"><span>${label}</span><input class="num" ${attr} inputmode="decimal" autocomplete="off"${ph?` placeholder="${ph}"`:''}></label>`;
+      const q=(k,label,ctl)=>`<label class="exf"><span>${label}</span>${ctl}<i class="mk" data-mk="${k}" aria-hidden="true"></i></label>`;
+      const sel=(k,opts)=>`<select class="num" data-q="${k}"><option value="">Elige…</option>${opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select>`;
+      return `<div class="ex">
+        <div class="ex-row"><span class="ex-h">Datos</span>
+          ${num('data-in="S" aria-label="Precio actual S"','Precio actual S')}
+          ${num('data-in="K" aria-label="Strike K"','Strike K')}
+          ${num('data-in="T" aria-label="Precio al vencimiento S T"','Precio al vencimiento S<sub>T</sub>')}
+          <span class="kv"><span>Prima</span><strong id="exP"></strong><span class="note">calculada</span></span>
+          <button class="chip" data-exact="new">Otro ejercicio</button></div>
+        <div class="ex-row"><span class="ex-h">Responde</span>
+          ${q('m','Moneyness',sel('m',[['itm','In the money'],['atm','At the money'],['otm','Out of the money']]))}
+          ${q('be','Punto de equilibrio','<input class="num" data-q="be" inputmode="decimal" autocomplete="off" placeholder="$">')}
+          ${q('ej','¿Se ejerce en S<sub>T</sub>?',sel('ej',[['si','Sí'],['no','No']]))}
+          ${q('res','Resultado en S<sub>T</sub>','<input class="num" data-q="res" inputmode="decimal" autocomplete="off" placeholder="+/− $">')}
+          <button class="chip go" data-exact="check">Revisar</button></div>
+        <div class="ex-fb" id="exFb" aria-live="polite"></div>
+      </div>`;
+    }
     return '';
   }
   $('extra').addEventListener('click',e=>{
     const p=e.target.closest('[data-start]'); if(p){ setStrat(p.dataset.start,true); go(1); return; }
+    const x=e.target.closest('[data-exact]'); if(x){ x.dataset.exact==='check'?exCheck():exNew(); return; }
     const b=e.target.closest('[data-m]'); if(!b)return;
-    // Con S fijo se elige el strike: call ITM = S − 10, put ITM = S + 10
-    const m=b.dataset.m, d=cfg().call?-10:10;
+    // Con S fijo se elige el strike a una distancia proporcional al precio (con S = $90, ±$10)
+    const m=b.dataset.m, D=nice(st.S/10), d=cfg().call?-D:D;
     tweenK(m==='itm'?st.S+d:m==='atm'?st.S:st.S-d);
   });
   let tw=0;
   function tweenK(target){
-    const [a,b]=kLim(); target=clamp(target,[Math.max(a,st.S-GAP),Math.min(b,st.S+GAP)]);
+    target=Math.max(MIN,target);
     const from=st.K, t0=performance.now(), dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:550, id=++tw;
     const tick=now=>{ if(id!==tw)return;
       const t=dur?Math.min(1,(now-t0)/dur):1, e=1-Math.pow(1-t,3);
-      st.K=t<1?from+(target-from)*e:target; render(); if(t<1)requestAnimationFrame(tick); };
+      st.smooth=t<1; st.K=t<1?from+(target-from)*e:target;
+      if(t>=1&&needsFit()){ st.prem=premOf(st.S,st.K,cfg().call); fitScale(); }
+      render(); if(t<1)requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
   }
+
+  // Ejercicio
+  const exDefaultT=()=>Math.max(MIN,rnd(st.K*(cfg().call?1.12:0.88),stepOf(st.K)));
+  function exReset(){ st.ex.res=null; if(st.step===EX){ st.reveal=false; applyLayers(); } }
+  function exNew(){
+    // Valores cercanos a los actuales, redondeados a pesos (o a centavos con precios chicos)
+    const R=Math.random, q=v=>Math.max(stepOf(v),v>=20?1:0);
+    const K=Math.max(MIN,rnd(st.K*(0.8+0.4*R()),q(st.K)));
+    st.K=K; st.S=Math.max(MIN,rnd(K*(0.85+0.3*R()),q(K))); st.ex.T=Math.max(MIN,rnd(K*(0.7+0.6*R()),q(K)));
+    st.ex.ans={}; exReset(); st.prem=premOf(st.S,st.K,cfg().call); fitScale(); render();
+  }
+  function exCheck(){
+    const c=cfg(), {K}=st, T=st.ex.T, B=be(), ej=c.call?T>K:T<K, r=pay(T), a=st.ex.ans;
+    const near=(x,y)=>isFinite(x)&&Math.abs(x-y)<=Math.max(0.011,Math.abs(y)*0.001);
+    st.ex.res={m:a.m===mness(), be:near(parseNum(a.be),B), ej:a.ej===(ej?'si':'no'), res:near(parseNum(a.res),r)};
+    st.reveal=true; st.T=T; fitScale(); applyLayers(); render(); redraw();
+  }
+  function syncEx(){
+    const box=$('extra'); if(st.step!==EX||!box.querySelector('.ex'))return;
+    const c=cfg(), {S,K,prem}=st, T=st.ex.T, B=be(), m=mness(), sgn=c.call?'+':'−', res=st.ex.res;
+    box.querySelectorAll('[data-in]').forEach(el=>syncIn(el,el.dataset.in==='T'?T:st[el.dataset.in]));
+    box.querySelectorAll('[data-q]').forEach(el=>{ if(document.activeElement!==el) el.value=st.ex.ans[el.dataset.q]||''; });
+    $('exP').textContent=money(prem); $('exP').style.color=`var(${c.buy?'--loss':'--gain'})`;
+    box.querySelectorAll('[data-mk]').forEach(el=>{const ok=res&&res[el.dataset.mk];
+      el.textContent=res?(ok?'✓':'✗'):''; el.className='mk'+(res?(ok?' ok':' no'):''); });
+    if(!res){ $('exFb').innerHTML=''; return; }
+    const iv=intrinsic(T), r=pay(T), ej=c.call?T>K:T<K, op=(a,b)=>a>b?'&gt;':a<b?'&lt;':'=';
+    const fx=c.call?`máx(${money(T)} − ${money(K)}, 0)`:`máx(${money(K)} − ${money(T)}, 0)`;
+    const lines=[
+      ['m',`Moneyness: S ${money(S)} ${op(S,K)} K ${money(K)} → <b>${MN[m]}</b>`+(c.call?'':' (en un put la comparación se invierte)')],
+      ['be',`Equilibrio = K ${sgn} prima = ${money(K)} ${sgn} ${money(prem)} = <b>${money(B)}</b>`],
+      ['ej',`S<sub>T</sub> ${money(T)} ${op(T,K)} K ${money(K)} → <b>${ej?'sí se ejerce':'no se ejerce'}</b>`],
+      ['res',`Resultado = ${c.buy?`${fx} − prima = ${money(iv)} − ${money(prem)}`:`prima − ${fx} = ${money(prem)} − ${money(iv)}`} = <b>${signed(r)}</b>`]
+    ];
+    const n=Object.values(res).filter(Boolean).length;
+    $('exFb').innerHTML=`<p class="ex-score ${n===4?'ok':''}">${n} de 4 correctas${n===4?' · ¡Muy bien!':''}</p>`
+      +lines.map(([k,t])=>`<p><b class="${res[k]?'ok':'no'}">${res[k]?'✓':'✗'}</b> ${t}</p>`).join('');
+  }
+
+  // Casillas de captura (pie y ejercicio): S, K y S_T aceptan cualquier precio desde $1
+  const syncIn=(el,v)=>{ if(el&&document.activeElement!==el){ el.value=v==null?'':fmt(v); el.removeAttribute('aria-invalid'); } };
+  document.addEventListener('input',e=>{
+    const el=e.target;
+    if(el.dataset&&el.dataset.in){
+      const v=parseNum(el.value), ok=isFinite(v)&&v>=MIN;
+      el.setAttribute('aria-invalid',!ok); el.title=ok?'':'Escribe un precio de $1 en adelante';
+      if(!ok)return;
+      if(el.dataset.in==='T'){ st.ex.T=v; exReset(); st.prem=premOf(st.S,st.K,cfg().call); fitScale(); render(); }
+      else setVal(el.dataset.in,v,'fit');
+    } else if(el.dataset&&el.dataset.q){
+      st.ex.ans[el.dataset.q]=el.value;
+      const mk=document.querySelector(`[data-mk="${el.dataset.q}"]`); if(mk){mk.textContent='';mk.className='mk';}
+    }
+  });
+  document.addEventListener('change',e=>{ if(e.target.dataset&&e.target.dataset.q) st.ex.ans[e.target.dataset.q]=e.target.value; });
+  // Al salir de la casilla se muestra el valor con formato (o se restaura si no era válido)
+  document.addEventListener('focusout',e=>{ if(e.target.dataset&&e.target.dataset.in) setTimeout(render,0); });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter'||!e.target.dataset)return;
+    if(e.target.dataset.q){ e.preventDefault(); exCheck(); }
+    else if(e.target.dataset.in){ e.preventDefault(); e.target.blur(); }
+  });
 
   // Dibujo
   const set=(id,attrs)=>{const el=$(id);for(const k in attrs)el.setAttribute(k,attrs[k]);};
@@ -522,14 +672,15 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     // Solo se muestra el texto si cabe en su franja (alto y ancho)
     const fits=el=>el.getComputedTextLength()<=w-12*M;
     $('ivTxt').textContent=money(iv)+' valor intrínseco'; set('ivTxt',{x:cx,y:(Y0+yI)/2+5*M});
-    $('ivTxt').style.opacity=iv*8.5>=22*M&&fits($('ivTxt'))?1:0;
+    $('ivTxt').style.opacity=iv*YS>=22*M&&fits($('ivTxt'))?1:0;
     $('tvTxt').textContent=money(tv)+' valor en el tiempo'; set('tvTxt',{x:cx,y:(yI+yP)/2+5*M}); $('tvTxt').style.fill=flatCol;
-    $('tvTxt').style.opacity=tv*8.5>=22*M&&fits($('tvTxt'))?1:0;
+    $('tvTxt').style.opacity=tv*YS>=22*M&&fits($('tvTxt'))?1:0;
 
     // Escalones: las tres primas posibles (ITM / ATM / OTM) con el mismo S, cada una hasta su strike
-    const d=c.call?-10:10, cur=mness();
+    const D=nice(st.S/10), d=c.call?-D:D, cur=mness();
     let g='';
     [['itm',st.S+d],['atm',st.S],['otm',st.S-d]].forEach(([m,K])=>{
+      if(K<=0)return;
       const p=premOf(st.S,K,c.call), xk=px(K), yp=py(sg*p), on=m===cur;
       const rx=Math.min(xEdge,xk), rw=Math.abs(xk-xEdge);
       g+=`<rect x="${rx}" y="${Math.min(Y0,yp)}" width="${rw}" height="${Math.abs(yp-Y0)}" fill="none"
@@ -539,6 +690,10 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
             style="font-size:calc(${on?17:15}px*var(--m));font-weight:${on?700:600};fill:${on?flatCol:'var(--ink-2)'}">${m.toUpperCase()} · ${money(p)}</text>`;
     });
     $('ghosts').innerHTML=g;
+    const lbl=[...$('ghosts').querySelectorAll('text')].sort((a,b)=>sg*(b.getBBox().y-a.getBBox().y));
+    lbl.forEach((t,i)=>{ for(let j=0;j<i;j++){ const a=lbl[j].getBBox(), b=t.getBBox();
+      if(a.x<b.x+b.width&&b.x<a.x+a.width&&a.y<b.y+b.height&&b.y<a.y+a.height)
+        t.setAttribute('y',+t.getAttribute('y')+(sg<0?a.y+a.height-b.y+2:-(b.y+b.height-a.y+2))); } });
   }
 
   // Factor de tamaño de las etiquetas: en pantallas angostas la gráfica se reduce mucho,
@@ -570,7 +725,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     const flatTint=c.buy?'var(--loss-tint)':'var(--gain-tint)', tailTint=c.buy?'var(--gain-tint)':'var(--loss-tint)';
     const xK=px(K), xS=px(S), xB=px(B), yF=py(flatV);
     const xEdge=c.call?90:XR;
-    const pEnd=c.call?Math.min(P1,B+VMAX):Math.max(PL,B-VMAX);
+    const pEnd=c.call?Math.min(P1,B+VMAX):Math.max(pFromX(XL),0,B-VMAX);
     const xE=px(pEnd), yE=py(pay(pEnd));
 
     // Etiqueta del eje X en el lado libre
@@ -603,7 +758,7 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
 
     // Prima
     set('premBar',{y2:yF,stroke:flatCol});
-    $('premTick').textContent=(c.buy?'−':'+')+prem; set('premTick',{y:yF+6*M}); $('premTick').style.fill=flatCol;
+    $('premTick').textContent=(c.buy?'−':'+')+fmt(prem); set('premTick',{y:yF+6*M}); $('premTick').style.fill=flatCol;
     set('flat',{d:`M${xEdge} ${yF} H${xK}`,stroke:flatCol});
     $('premLbl').innerHTML=`${c.buy?'Prima pagada':'Prima recibida'} <tspan style="font-weight:600;fill:${flatCol}">${c.buy?'−':'+'}${money(prem)}</tspan>`;
     set('premLbl',{x:c.call?104:xK+16*M,y:flatV<0?yF-13*M:yF+10+16*M});
@@ -632,6 +787,15 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     if(M>1&&hit('tailLbl','beLbl')){const t=$('tailLbl').getBBox(), e=$('beLbl').getBBox();
       set('tailLbl',{y:+$('tailLbl').getAttribute('y')+(tailUp?e.y-(t.y+t.height)-6:e.y+e.height-t.y+6)});}
 
+    // Con precios largos el equilibrio puede tapar "Precio del subyacente": pasa al otro lado del eje si ahí no choca
+    let xFade=false; // si no cabe de ningún lado, se atenúa (es el nombre del eje, ya conocido)
+    if(LAYER_ON('be')&&hit('xLbl','beLbl')){
+      const y0=$('xLbl').getAttribute('y'); $('xLbl').setAttribute('y',xUp?Y0+30*M:Y0-18*M);
+      if(['beLbl','premLbl','tailLbl'].some(id=>hit('xLbl',id))){ $('xLbl').setAttribute('y',y0); xFade=true; }
+    }
+    // Si la prima tiene muchas cifras y su número choca con "Ganancia / Pérdida", esa etiqueta se atenúa
+    $('yLbl').style.opacity=LAYER_ON('prem')&&hit('premTick','yLbl')?.15:'';
+
     renderSplit(c,flatCol,xEdge,xK);
     $('premLbl').style.opacity=st.step===SPLIT?0:1;
 
@@ -642,36 +806,40 @@ button:focus-visible{outline:2px solid var(--spot);outline-offset:2px}
     $('pLbl').innerHTML=`S<tspan baseline-shift="sub" style="font-size:calc(11px*var(--m))">T</tspan> = ${money(T)}  →  <tspan style="fill:${v>0?'var(--gain)':v<0?'var(--loss)':'var(--be)'}">${signed(v)}</tspan>`;
 
     ['beLbl','tailLbl','xLbl'].forEach(id=>$(id).style.opacity='');
-    if(M>1&&st.step===N-1){
-      const near=['beLbl','tailLbl','xLbl','premLbl'], n=()=>near.filter(id=>hit('pLbl',id)).length, n0=n();
+    if(xFade) $('xLbl').style.opacity=.15;
+    if(M>1&&(st.step===RES||st.step===EX)){
+      const near=['beLbl','tailLbl','xLbl','premLbl'], n=()=>near.concat('kPill','sPill').filter(id=>hit('pLbl',id)).length, n0=n();
       if(n0){set('pLbl',{y:v>=0?yT+34*M:yT-22*M}); if(n()>=n0)set('pLbl',{y:v>=0?yT-22*M:yT+34*M});}
       // Lo que siga tapado por la lectura de la sonda se atenúa mientras esté encima
       near.forEach(id=>{if(hit('pLbl',id))$(id).style.opacity=.12;});
     }
 
     // Pie y extra
-    $('vS').textContent=money(S); $('vK').textContent=money(K); $('vP').textContent=money(prem);
+    syncIn($('inS'),S); syncIn($('inK'),K); $('vP').textContent=money(prem);
     const ex=$('extra'), html=extra(); if(ex.dataset.h!==html){ex.innerHTML=html;ex.dataset.h=html;}
+    syncEx();
   }
 
-  // Choque entre dos etiquetas (en coordenadas de la gráfica)
-  function hit(a,b){const p=$(a).getBBox(), q=$(b).getBBox();
-    return p.width&&q.width&&p.x<q.x+q.width&&q.x<p.x+p.width&&p.y<q.y+q.height&&q.y<p.y+p.height;}
+  // Choque entre dos etiquetas (posición real en pantalla, incluye la etiqueta vertical rotada)
+  function hit(a,b,t=1){const p=$(a).getBoundingClientRect(), q=$(b).getBoundingClientRect();
+    return p.width&&q.width&&p.left+t<q.right&&q.left+t<p.right&&p.top+t<q.bottom&&q.top+t<p.bottom;}
 
-  // Botones de parámetros
+  // Botones − / + : el paso es proporcional al precio ($1 con $90, $10 con $1,250)
   $('params').addEventListener('click',e=>{
     const b=e.target.closest('[data-k]'); if(!b)return;
-    const k=b.dataset.k; setVal(k,st[k]+(+b.dataset.d));
+    const k=b.dataset.k, q=stepOf(st[k]); setVal(k,rnd(st[k]+(+b.dataset.d)*q,q),'auto');
   });
 
-  // Arrastre en la gráfica
+  // Arrastre en la gráfica (la escala se queda fija mientras se arrastra y se ajusta al soltar)
   function svgX(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse()).x;}
   function drag(el,key){
     el.addEventListener('pointerdown',e=>{
       e.preventDefault(); el.setPointerCapture(e.pointerId);
-      const move=ev=>setVal(key,Math.round(pFromX(svgX(ev))));
+      const move=ev=>{const p=pFromX(svgX(ev)), q=stepOf(key==='T'?st.K:st[key]);
+        setVal(key,key==='T'?rnd(p,q):clamp(rnd(p,q),[Math.max(MIN,P0),P1]));};
       move(e);
-      const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);};
+      const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
+        if(key!=='T'&&needsFit()){fitScale();render();}};
       el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
     });
   }
